@@ -27,7 +27,12 @@ import { Redirect, Route } from 'react-router';
             <IonTitle>Menu Content</IonTitle>
           </IonToolbar>
         </IonHeader>
-        <IonContent className="ion-padding">This is the menu content.</IonContent>
+        <IonContent className="ion-padding">
+        <IonButton routerLink="/it35-lab" routerDirection="back" expand="full">
+                            <IonIcon icon={logOutOutline} slot="start"> </IonIcon>
+                        Logout
+                        </IonButton>
+        </IonContent>
       </IonMenu>
       <IonPage id="main-content">
         <IonHeader>
