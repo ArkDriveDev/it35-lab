@@ -19,6 +19,7 @@ import Home from './Home';
   const Menu: React.FC = () => {
     const path = [
         {name:'Home', url: '/it35-lab/app/home', icon: homeOutline},
+        {name:'About', url: '/it35-lab/app/about', icon: rocketOutline},
     ]
 
     return (
