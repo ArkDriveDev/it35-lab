@@ -16,7 +16,8 @@ import {
   import {homeOutline, logOutOutline, rocketOutline} from 'ionicons/icons';
 import { Redirect, Route } from 'react-router';
 import Home from './Home';
-import About from './About';  const Menu: React.FC = () => {
+import About from './About';
+  const Menu: React.FC = () => {
     const path = [
         {name:'Home', url: '/it35-lab/app/home', icon: homeOutline},
         {name:'About', url: '/it35-lab/app/about', icon: rocketOutline},
@@ -57,6 +58,8 @@ import About from './About';  const Menu: React.FC = () => {
         <IonContent className="ion-padding">
         <IonRouterOutlet id="main">
                     <Route exact path="/it35-lab/app/home" component={Home} />
+                    <Route exact path="/it35-lab/app/about" component={About} />
+
                     <Route exact path="/it35-lab/app">
                         <Redirect to="/it35-lab/app/home"/>
                     </Route>
