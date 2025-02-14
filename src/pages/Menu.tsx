@@ -15,9 +15,11 @@ import {
   } from '@ionic/react'
   import {homeOutline, logOutOutline, rocketOutline} from 'ionicons/icons';
 import { Redirect, Route } from 'react-router';
-
+import Home from './Home';
   const Menu: React.FC = () => {
-    
+    const path = [
+        {name:'Home', url: '/it35-lab/app/home', icon: homeOutline},
+    ]
 
     return (
         <>
@@ -28,6 +30,14 @@ import { Redirect, Route } from 'react-router';
           </IonToolbar>
         </IonHeader>
         <IonContent className="ion-padding">
+        {path.map((item,index) =>(
+                            <IonMenuToggle key={index}>
+                                <IonItem routerLink={item.url} routerDirection="forward">
+                                    <IonIcon icon={item.icon} slot="start"></IonIcon>
+                                    {item.name}
+                                </IonItem>
+                            </IonMenuToggle>
+                        ))}
         <IonButton routerLink="/it35-lab" routerDirection="back" expand="full">
                             <IonIcon icon={logOutOutline} slot="start"> </IonIcon>
                         Logout
