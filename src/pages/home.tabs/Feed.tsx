@@ -19,6 +19,7 @@ const Feed: React.FC = () => {
         </IonToolbar>
       </IonHeader>
       <IonContent fullscreen>
+        
       </IonContent>
     </IonPage>
   );
