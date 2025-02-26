@@ -1,11 +1,15 @@
 import { 
   IonButtons,
     IonContent, 
-    IonHeader, 
-    IonMenuButton, 
+    IonHeader,  
     IonPage, 
     IonTitle, 
-    IonToolbar 
+    IonToolbar,
+    IonCard, 
+    IonCardContent, 
+    IonCardHeader, 
+    IonCardSubtitle, 
+    IonCardTitle 
 } from '@ionic/react';
 
 const Feed: React.FC = () => {
@@ -19,6 +23,14 @@ const Feed: React.FC = () => {
         </IonToolbar>
       </IonHeader>
       <IonContent fullscreen>
+      <IonCard>
+      <IonCardHeader>
+        <IonCardTitle>Hottest Animes</IonCardTitle>
+        <IonCardSubtitle>Click to watch now</IonCardSubtitle>
+      </IonCardHeader>
+
+      <IonCardContent>Here's a small text description for the card content. Nothing more, nothing less.</IonCardContent>
+    </IonCard>
         
       </IonContent>
     </IonPage>
