@@ -27,9 +27,9 @@ import {
         <h1>User Login</h1>
         <IonItem>
         <IonInput label="Text input" placeholder="Username:"></IonInput>
+        </IonItem>
         <IonItem>
         <IonInput label="Password input" type="password" value="Password"></IonInput>
-      </IonItem>
       </IonItem>
             <IonButton onClick={() => doLogin()} expand="full">
                 Login
