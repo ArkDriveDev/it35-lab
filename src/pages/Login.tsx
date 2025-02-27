@@ -1,13 +1,13 @@
 import { 
     IonButton,
-    IonButtons,
       IonContent, 
       IonHeader, 
-      IonMenuButton, 
       IonPage, 
       IonTitle, 
       IonToolbar, 
-      useIonRouter
+      useIonRouter,
+      IonInput, 
+      IonItem, 
   } from '@ionic/react';
   
   const Login: React.FC = () => {
@@ -24,6 +24,13 @@ import {
           </IonToolbar>
         </IonHeader>
         <IonContent className='ion-padding'>
+        <IonItem>
+          <h1>User Login</h1>
+        <IonInput label="Text input" placeholder="Username:"></IonInput>
+        <IonItem>
+        <IonInput label="Password input" type="password" value="Password"></IonInput>
+      </IonItem>
+      </IonItem>
             <IonButton onClick={() => doLogin()} expand="full">
                 Login
             </IonButton>
