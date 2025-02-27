@@ -24,8 +24,8 @@ import {
           </IonToolbar>
         </IonHeader>
         <IonContent className='ion-padding'>
+        <h1>User Login</h1>
         <IonItem>
-          <h1>User Login</h1>
         <IonInput label="Text input" placeholder="Username:"></IonInput>
         <IonItem>
         <IonInput label="Password input" type="password" value="Password"></IonInput>
