@@ -2,10 +2,12 @@ import {
     IonButtons,
       IonContent, 
       IonHeader, 
-      IonMenuButton, 
       IonPage, 
       IonTitle, 
-      IonToolbar 
+      IonToolbar,
+      IonItem, 
+      IonLabel, 
+      IonList 
   } from '@ionic/react';
   
   const About: React.FC = () => {
@@ -19,6 +21,20 @@ import {
           </IonToolbar>
         </IonHeader>
         <IonContent fullscreen>
+        <IonList>
+      <IonItem>
+        <IonLabel>Terms and Registration</IonLabel>
+      </IonItem>
+      <IonItem>
+        <IonLabel>Settings</IonLabel>
+      </IonItem>
+      <IonItem>
+        <IonLabel>Support and Services</IonLabel>
+      </IonItem>
+      <IonItem>
+        <IonLabel>Information</IonLabel>
+      </IonItem>
+    </IonList>
         </IonContent>
       </IonPage>
     );

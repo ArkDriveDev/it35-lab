@@ -1,11 +1,15 @@
 import { 
   IonButtons,
     IonContent, 
-    IonHeader, 
-    IonMenuButton, 
+    IonHeader,  
     IonPage, 
     IonTitle, 
-    IonToolbar 
+    IonToolbar,
+    IonCard, 
+    IonCardContent, 
+    IonCardHeader, 
+    IonCardSubtitle, 
+    IonCardTitle,
 } from '@ionic/react';
 
 const Feed: React.FC = () => {
@@ -19,7 +23,15 @@ const Feed: React.FC = () => {
         </IonToolbar>
       </IonHeader>
       <IonContent fullscreen>
-        
+    <IonCard>
+      <img alt="Silhouette of mountains" src="https://wallpapers.com/images/hd/all-anime-epic-japanese-anime-characters-2e92kjl5ii5i7rwz.jpg"/>
+      <IonCardHeader>
+        <IonCardTitle>Hottest Animes</IonCardTitle>
+        <IonCardSubtitle>Click to watch now</IonCardSubtitle>
+      </IonCardHeader>
+
+      <IonCardContent>The best Animes of 2025 can be watch now in Animepahe.com click the image to redirect to the website.</IonCardContent>
+    </IonCard>
       </IonContent>
     </IonPage>
   );

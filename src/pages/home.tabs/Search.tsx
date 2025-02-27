@@ -2,7 +2,7 @@ import {
     IonButtons,
       IonContent, 
       IonHeader, 
-      IonMenuButton, 
+      IonSearchbar,
       IonPage, 
       IonTitle, 
       IonToolbar 
@@ -19,6 +19,11 @@ import {
           </IonToolbar>
         </IonHeader>
         <IonContent fullscreen>
+        <IonSearchbar></IonSearchbar>
+      <IonSearchbar placeholder="Custom Placeholder"></IonSearchbar>
+      <IonSearchbar disabled={true} placeholder="Disabled"></IonSearchbar>
+      <IonSearchbar value="Value"></IonSearchbar>
+      <IonSearchbar animated={true} placeholder="Animated"></IonSearchbar>
         </IonContent>
       </IonPage>
     );
