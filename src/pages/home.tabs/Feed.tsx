@@ -9,7 +9,7 @@ import {
     IonCardContent, 
     IonCardHeader, 
     IonCardSubtitle, 
-    IonCardTitle 
+    IonCardTitle,
 } from '@ionic/react';
 
 const Feed: React.FC = () => {

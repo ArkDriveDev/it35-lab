@@ -26,13 +26,12 @@ const Details: React.FC = () => {
       <IonContent fullscreen>
       <IonCard>
       <IonCardHeader>
-        <IonCardTitle>Card Title</IonCardTitle>
-        <IonCardSubtitle>Card Subtitle</IonCardSubtitle>
+        <IonCardTitle>These about these Application</IonCardTitle>
+        <IonCardSubtitle>Click the button for details</IonCardSubtitle>
       </IonCardHeader>
 
       <IonCardContent>
-      <IonButton>click me</IonButton>
-      <IonButton disabled={true}>Disabled</IonButton>
+      <IonButton>click for details</IonButton>
       </IonCardContent>
     </IonCard>
       </IonContent>
