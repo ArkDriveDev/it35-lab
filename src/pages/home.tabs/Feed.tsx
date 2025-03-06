@@ -13,6 +13,11 @@ import {
 } from '@ionic/react';
 
 const Feed: React.FC = () => {
+  const Gowebsite= () => {
+    // Open the link programmatically
+    window.open('https://animepahe.ru/', '_blank', 'noopener,noreferrer');
+  };
+
   return (
     <IonPage>
       <IonHeader>
@@ -24,7 +29,7 @@ const Feed: React.FC = () => {
       </IonHeader>
       <IonContent fullscreen>
     <IonCard>
-      <img alt="Silhouette of mountains" src="https://wallpapers.com/images/hd/all-anime-epic-japanese-anime-characters-2e92kjl5ii5i7rwz.jpg"/>
+      <img alt="Silhouette of mountains" src="https://wallpapers.com/images/hd/all-anime-epic-japanese-anime-characters-2e92kjl5ii5i7rwz.jpg"onClick={Gowebsite}/>
       <IonCardHeader>
         <IonCardTitle>Hottest Animes</IonCardTitle>
         <IonCardSubtitle>Click to watch now</IonCardSubtitle>

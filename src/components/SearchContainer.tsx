@@ -3,16 +3,10 @@ import { IonItem, IonList, IonSearchbar } from '@ionic/react';
 
 function SearchContainer() {
   const data = [
-    'Amsterdam',
-    'Buenos Aires',
-    'Cairo',
-    'Geneva',
-    'Hong Kong',
-    'Istanbul',
-    'London',
-    'Madrid',
-    'New York',
-    'Panama City',
+    'Dragon ball',
+    'Naruto Shippuden',
+    'Inuyasha',
+    'Slam Dunk',
   ];
   let [results, setResults] = useState([...data]);
 
