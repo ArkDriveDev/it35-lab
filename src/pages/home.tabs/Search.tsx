@@ -7,6 +7,7 @@ import {
       IonTitle, 
       IonToolbar 
   } from '@ionic/react';
+import SearchContainer from '../../components/SearchContainer';
   
   const Search: React.FC = () => {
     return (
@@ -19,11 +20,7 @@ import {
           </IonToolbar>
         </IonHeader>
         <IonContent fullscreen>
-        <IonSearchbar></IonSearchbar>
-      <IonSearchbar placeholder="Custom Placeholder"></IonSearchbar>
-      <IonSearchbar disabled={true} placeholder="Disabled"></IonSearchbar>
-      <IonSearchbar value="Value"></IonSearchbar>
-      <IonSearchbar animated={true} placeholder="Animated"></IonSearchbar>
+        <SearchContainer/>
         </IonContent>
       </IonPage>
     );
