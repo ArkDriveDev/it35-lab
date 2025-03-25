@@ -137,7 +137,14 @@ function Registration() {
           onDidDismiss={() => setShowAlert(false)}
           header="Registration Complete!"
           message="Your registration is saved you can now login"
-          buttons={['OK']}
+          buttons={[
+            {
+              text: 'OK',
+              handler: () => {
+                doLogin(); // Redirect to login after clicking OK
+              }
+            }
+          ]}
         ></IonAlert>
       </IonContent>
     </IonPage>
