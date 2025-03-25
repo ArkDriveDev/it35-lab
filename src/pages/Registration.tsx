@@ -44,13 +44,13 @@ function Registration() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
 
-  // Define the event type as CustomEvent with a 'detail' property
+  
   const handleNameChange = (e: CustomEvent) => {
-    setName(e.detail.value); // Access the value from e.detail
+    setName(e.detail.value); 
   };
 
   const handleEmailChange = (e: CustomEvent) => {
-    setEmail(e.detail.value); // Access the value from e.detail
+    setEmail(e.detail.value); 
   };
   return (
     <IonPage>
@@ -61,55 +61,60 @@ function Registration() {
       </IonHeader>
       <IonContent className="ion-padding">
       <IonItem>
-        <IonLabel position="stacked">Enter your name</IonLabel>
+        <IonLabel position="stacked">Enter your Username</IonLabel>
         <IonInput
-          value={name} // Bind state to input value
-          onIonChange={handleNameChange} // Update state on change
+          value={name} 
+          onIonChange={handleNameChange} 
           type="text"
-          placeholder="Your name"
+          placeholder="Your Username"
         />
       </IonItem>
       
       <IonItem>
-        <IonLabel position="stacked">Enter your email</IonLabel>
+        <IonLabel position="stacked">Enter your Email</IonLabel>
         <IonInput
-          value={email} // Bind state to input value
-          onIonChange={handleEmailChange} // Update state on change
+          value={email} 
+          onIonChange={handleEmailChange} 
           type="text"
-          placeholder="Your email"
+          placeholder="Your Email"
         />
       </IonItem>
 
         <IonButton id="open-modal" expand="block">
             Signup
         </IonButton>
-        <IonButton onClick={() => doLogin()} expand="full">
-             go to login
+            <IonButton onClick={() => doLogin()} expand="full">
+              go to login
             </IonButton>
-        <IonModal ref={modal} trigger="open-modal" onWillDismiss={(event) => onWillDismiss(event)}>
-          <IonHeader>
-            <IonToolbar>
-              <IonButtons slot="start">
-                <IonButton onClick={() => modal.current?.dismiss()}>Cancel</IonButton>
-              </IonButtons>
-              <IonTitle>your inputs</IonTitle>
-              <IonButtons slot="end">
-                <IonButton id="open-modal2" strong={true}>
-                  confirm
-                </IonButton>
-              </IonButtons>
-            </IonToolbar>
-          </IonHeader>
-          <IonContent className="ion-padding">
-            <IonItem>
-            <IonCard>
+            <IonModal 
+              ref={modal} 
+              trigger="open-modal" 
+              onWillDismiss={(event) => onWillDismiss(event)}
+            >
+              <IonHeader>
+                <IonToolbar>
+                  <IonButtons slot="start">
+       
+                    <IonButton onClick={() => modal.current?.dismiss(null, 'cancel')}>Cancel</IonButton>
+                  </IonButtons>
+                  <IonTitle>your inputs</IonTitle>
+                  <IonButtons slot="end">
+                    <IonButton strong={true} onClick={() => confirm()}>
+                        Confirm
+                    </IonButton>
+                 </IonButtons>
+                </IonToolbar>
+              </IonHeader>
+            <IonContent className="ion-padding">
+              <IonItem>
+              <IonCard>
                 <IonCardHeader>
                 <IonCardTitle>Your username input</IonCardTitle>
                     <IonCardSubtitle>Username:</IonCardSubtitle>
                     </IonCardHeader>
 
                 <IonCardContent>{name}</IonCardContent>
-            </IonCard>
+              </IonCard>
               </IonItem>
               <IonItem>
               <IonCard>
@@ -118,39 +123,12 @@ function Registration() {
                     <IonCardSubtitle>Email:</IonCardSubtitle>
                     </IonCardHeader>
 
-                <IonCardContent>{name}</IonCardContent>
+                <IonCardContent>{email}</IonCardContent>
             </IonCard>
             </IonItem>
           </IonContent>
         </IonModal>
 
-        <IonModal ref={modal} trigger="open-modal2" onWillDismiss={(event) => onWillDismiss(event)}>    
-        <IonHeader> 
-            <IonTitle>you confirmed</IonTitle>
-        </IonHeader>
-        <IonContent className="ion-padding">
-            <IonItem>
-            <IonCard>
-                <IonCardHeader>
-                <IonCardTitle>Your Username</IonCardTitle>
-                    <IonCardSubtitle>Username:</IonCardSubtitle>
-                    </IonCardHeader>
-
-                <IonCardContent>{name}</IonCardContent>
-            </IonCard>
-              </IonItem>
-              <IonItem>
-              <IonCard>
-                <IonCardHeader>
-                <IonCardTitle>Your Email</IonCardTitle>
-                    <IonCardSubtitle>Email:</IonCardSubtitle>
-                    </IonCardHeader>
-
-                <IonCardContent>{name}</IonCardContent>
-            </IonCard>
-            </IonItem>
-          </IonContent>
-        </IonModal>
       </IonContent>
     </IonPage>
   );
