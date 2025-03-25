@@ -16,7 +16,8 @@ import {
   IonCardHeader, 
   IonCardSubtitle, 
   IonCardTitle,
-  IonLabel
+  IonLabel,
+  IonAlert
 } from '@ionic/react';
 import { OverlayEventDetail } from '@ionic/core/components';
 
@@ -34,7 +35,9 @@ function Registration() {
 
   function confirm() {
     modal.current?.dismiss(input.current?.value, 'confirm');
+    setShowAlert(true); // Show alert after dismissing modal
   }
+
 
   function onWillDismiss(event: CustomEvent<OverlayEventDetail>) {
     if (event.detail.role === 'confirm') {
@@ -52,6 +55,7 @@ function Registration() {
   const handleEmailChange = (e: CustomEvent) => {
     setEmail(e.detail.value); 
   };
+  const [showAlert, setShowAlert] = useState(false);
   return (
     <IonPage>
       <IonHeader>
@@ -97,9 +101,9 @@ function Registration() {
        
                     <IonButton onClick={() => modal.current?.dismiss(null, 'cancel')}>Cancel</IonButton>
                   </IonButtons>
-                  <IonTitle>your inputs</IonTitle>
+                  <IonTitle>are you sure with your inputs?</IonTitle>
                   <IonButtons slot="end">
-                    <IonButton strong={true} onClick={() => confirm()}>
+                    <IonButton  id="present-alert" onClick={() => confirm()}>
                         Confirm
                     </IonButton>
                  </IonButtons>
@@ -128,7 +132,13 @@ function Registration() {
             </IonItem>
           </IonContent>
         </IonModal>
-
+        <IonAlert
+          isOpen={showAlert}
+          onDidDismiss={() => setShowAlert(false)}
+          header="Registration Complete!"
+          message="Your registration is saved you can now login"
+          buttons={['OK']}
+        ></IonAlert>
       </IonContent>
     </IonPage>
   );
