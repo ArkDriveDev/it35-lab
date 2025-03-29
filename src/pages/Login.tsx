@@ -11,6 +11,7 @@ import {
       IonInputPasswordToggle
   } from '@ionic/react';
   import { useState } from 'react';
+  import { supabase } from '../utils/supabaseClient';
   const Login: React.FC = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -66,7 +67,7 @@ import {
           Login
         </IonButton>
 
-        <IonButton routerLink="/it35-lab/register" expand="full" fill="clear" shape='round'>
+        <IonButton routerLink="/it35-lab/Registration" expand="full" fill="clear" shape='round'>
           Don't have an account? Register here
         </IonButton>
 
