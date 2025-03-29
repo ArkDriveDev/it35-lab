@@ -8,21 +8,46 @@ import {
       useIonRouter,
       IonItem,
       IonInput,
-      IonInputPasswordToggle
+      IonInputPasswordToggle,
+      IonAlert,
+      IonToast
   } from '@ionic/react';
   import { useState } from 'react';
   import { supabase } from '../utils/supabaseClient';
-  const Login: React.FC = () => {
+  const AlertBox: React.FC<{ message: string; isOpen: boolean; onClose: () => void }> = ({ message, isOpen, onClose }) => {
+    return (
+      <IonAlert
+        isOpen={isOpen}
+        onDidDismiss={onClose}
+        header="Notification"
+        message={message}
+        buttons={['OK']}
+      />
+    );
+  };
+    const Login: React.FC = () => {
+    const navigation = useIonRouter();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const navigation = useIonRouter();
-
-    const doLogin = () => {
-        navigation.push('/it35-lab/app','forward','replace');
-    }
-    const doregister = () => {
-      navigation.push('/it35-lab/registration','forward','replace');
-  }
+    const [alertMessage, setAlertMessage] = useState('');
+    const [showAlert, setShowAlert] = useState(false);
+    const [showToast, setShowToast] = useState(false);
+  
+    const doLogin = async () => {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+  
+      if (error) {
+        setAlertMessage(error.message);
+        setShowAlert(true);
+        return;
+      }
+  
+      setShowToast(true); 
+      setTimeout(() => {
+        navigation.push('/it35-lab/app', 'forward', 'replace');
+      }, 300);
+    };
+    
     return (
       <IonPage>
         <IonHeader>
@@ -70,7 +95,17 @@ import {
         <IonButton routerLink="/it35-lab/Registration" expand="full" fill="clear" shape='round'>
           Don't have an account? Register here
         </IonButton>
+        
+        <AlertBox message={alertMessage} isOpen={showAlert} onClose={() => setShowAlert(false)} />
 
+        <IonToast
+          isOpen={showToast}
+          onDidDismiss={() => setShowToast(false)}
+          message="Login successful! Redirecting..."
+          duration={1500}
+          position="top"
+          color="primary"
+        />
         </IonContent>
       </IonPage>
     );
