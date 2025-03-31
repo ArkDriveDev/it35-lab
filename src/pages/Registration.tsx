@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import {
   IonText,
   IonButton,
@@ -8,9 +8,7 @@ import {
   IonToolbar,
   IonTitle,
   IonPage,
-  IonItem,
   IonInput,
-  useIonRouter,
   IonCard, 
   IonCardContent, 
   IonCardHeader, 
@@ -20,24 +18,26 @@ import {
   IonAlert
 } from '@ionic/react';
 import { supabase } from '../utils/supabaseClient';
-import bcrypt from 'bcryptjs';
 
-function Registration() {
-  const modal = useRef<HTMLIonModalElement>(null);
-  const input = useRef<HTMLIonInputElement>(null);
-  const navigation = useIonRouter();
-  const [username, setUsername] = useState('');
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [showVerificationModal, setShowVerificationModal] = useState(false);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [alertMessage, setAlertMessage] = useState('');
-  const [showAlert, setShowAlert] = useState(false);
+interface AlertBoxProps {
+  message: string;
+  isOpen: boolean;
+  onClose: () => void;
+}
 
-  const AlertBox: React.FC<{ message: string; isOpen: boolean; onClose: () => void }> = ({ message, isOpen, onClose }) => {
+const Registration: React.FC = () => {
+  const [username, setUsername] = useState<string>('');
+  const [firstName, setFirstName] = useState<string>('');
+  const [lastName, setLastName] = useState<string>('');
+  const [email, setEmail] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [confirmPassword, setConfirmPassword] = useState<string>('');
+  const [showVerificationModal, setShowVerificationModal] = useState<boolean>(false);
+  const [showSuccessModal, setShowSuccessModal] = useState<boolean>(false);
+  const [alertMessage, setAlertMessage] = useState<string>('');
+  const [showAlert, setShowAlert] = useState<boolean>(false);
+
+  const AlertBox: React.FC<AlertBoxProps> = ({ message, isOpen, onClose }) => {
     return (
       <IonAlert
         isOpen={isOpen}
@@ -48,64 +48,61 @@ function Registration() {
       />
     );
   };
+
   const handleOpenVerificationModal = () => {
-      if (!email.endsWith("@nbsc.edu.ph")) {
-          setAlertMessage("Only @nbsc.edu.ph emails are allowed to register.");
-          setShowAlert(true);
-          return;
-      }
+    if (!email.endsWith("@nbsc.edu.ph")) {
+      setAlertMessage("Only @nbsc.edu.ph emails are allowed to register.");
+      setShowAlert(true);
+      return;
+    }
 
-      if (password !== confirmPassword) {
-          setAlertMessage("Passwords do not match.");
-          setShowAlert(true);
-          return;
-      }
+    if (password !== confirmPassword) {
+      setAlertMessage("Passwords do not match.");
+      setShowAlert(true);
+      return;
+    }
 
-      setShowVerificationModal(true);
+    setShowVerificationModal(true);
   };
 
-  
   const doRegister = async () => {
     setShowVerificationModal(false);
 
     try {
-        // Sign up in Supabase authentication
-        const { data, error } = await supabase.auth.signUp({ email, password });
-
-        if (error) {
-            throw new Error("Account creation failed: " + error.message);
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            username,
+            first_name: firstName,
+            last_name: lastName
+          },
+          emailRedirectTo: window.location.origin + '/welcome'
         }
+      });
 
-        // Hash password before storing in the database
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
+      if (error) throw error;
 
-        // Insert user data into 'users' table
-        const { error: insertError } = await supabase.from("users").insert([
-            {
-                username,
-                user_email: email,
-                user_firstname: firstName,
-                user_lastname: lastName,
-                user_password: hashedPassword,
-            },
-        ]);
+      // Optional: Store additional user data
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert({
+          id: data.user?.id,
+          username,
+          email,
+          first_name: firstName,
+          last_name: lastName
+        });
 
-        if (insertError) {
-            throw new Error("Failed to save user data: " + insertError.message);
-        }
+      if (profileError) console.warn("Profile creation warning:", profileError);
 
-        setShowSuccessModal(true);
-    } catch (err) {
-        // Ensure err is treated as an Error instance
-        if (err instanceof Error) {
-            setAlertMessage(err.message);
-        } else {
-            setAlertMessage("An unknown error occurred.");
-        }
-        setShowAlert(true);
+      setShowSuccessModal(true);
+    } catch (err: unknown) {
+      setAlertMessage(err instanceof Error ? err.message : "Registration failed");
+      setShowAlert(true);
     }
-};
+  };
   return (
     <IonPage>
       <IonHeader>
