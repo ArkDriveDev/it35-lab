@@ -13,7 +13,7 @@ import {
       IonToast
   } from '@ionic/react';
   import { useState } from 'react';
-  import { supabase } from '../utils/supabaseClient';
+  import { supabase } from '../utils/supaBaseClient';
   const AlertBox: React.FC<{ message: string; isOpen: boolean; onClose: () => void }> = ({ message, isOpen, onClose }) => {
     return (
       <IonAlert
