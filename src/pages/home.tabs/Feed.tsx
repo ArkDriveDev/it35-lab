@@ -1,16 +1,13 @@
 import { 
   IonButtons,
     IonContent, 
-    IonHeader,  
+    IonHeader, 
+    IonMenuButton, 
     IonPage, 
     IonTitle, 
-    IonToolbar,
-    IonCard, 
-    IonCardContent, 
-    IonCardHeader, 
-    IonCardSubtitle, 
-    IonCardTitle,
+    IonToolbar 
 } from '@ionic/react';
+import FeedContainer from '../../components/FeedContainer';
 
 const Feed: React.FC = () => {
   return (
@@ -18,20 +15,23 @@ const Feed: React.FC = () => {
       <IonHeader>
         <IonToolbar>
           <IonButtons slot='start'>
+            <IonMenuButton></IonMenuButton>
           </IonButtons>
           <IonTitle>Feed</IonTitle>
         </IonToolbar>
       </IonHeader>
       <IonContent fullscreen>
-    <IonCard>
-      <img alt="Silhouette of mountains" src="https://wallpapers.com/images/hd/all-anime-epic-japanese-anime-characters-2e92kjl5ii5i7rwz.jpg"/>
-      <IonCardHeader>
-        <IonCardTitle>Hottest Animes</IonCardTitle>
-        <IonCardSubtitle>Click to watch now</IonCardSubtitle>
-      </IonCardHeader>
-
-      <IonCardContent>The best Animes of 2025 can be watch now in Animepahe.com click the image to redirect to the website.</IonCardContent>
-    </IonCard>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: '100%',
+          }}
+        >
+          Feed
+        </div>
+        <FeedContainer />
       </IonContent>
     </IonPage>
   );
