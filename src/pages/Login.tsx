@@ -86,6 +86,7 @@ import {
                 marginTop:'10%',
                 width:'500px',
                 height:'600px',
+                backdropFilter: 'blur(3px)'
                 }}  >
             <IonCardContent>
               <div style={{
@@ -93,7 +94,7 @@ import {
                 flexDirection:'column',
                 alignItems: 'center',
                 justifyContent: 'center',
-                marginTop:'20%'
+                marginTop:'40%'
               }}>
          
              <h1 style={{
