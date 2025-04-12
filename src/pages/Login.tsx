@@ -16,6 +16,7 @@ import {
   import { useState } from 'react';
   import { supabase } from '../utils/supaBaseClient';
   import backgroundImg from '../images/space.gif';
+  import Logo from '../images/logo.gif';
   const AlertBox: React.FC<{ message: string; isOpen: boolean; onClose: () => void }> = ({ message, isOpen, onClose }) => {
     return (
       <IonAlert
@@ -96,6 +97,19 @@ import {
                 justifyContent: 'center',
                 marginTop:'40%'
               }}>
+
+              <img
+                src={Logo}
+                alt="background"
+                style={{
+                  position: 'absolute',
+                  top: '25%',
+                  left: '50%',
+                  width: '20%',
+                  height: '20%',
+                  transform: 'translate(-50%, -50%)',
+              }}
+            />
          
              <h1 style={{
                 display: 'flex',
@@ -118,10 +132,10 @@ import {
               value={password}
               onIonChange={e => setPassword(e.detail.value!)}
             >
-            <IonInputPasswordToggle slot="end"></IonInputPasswordToggle>
+            <IonInputPasswordToggle slot="end" color="tertiary"></IonInputPasswordToggle>
           </IonInput>
           </div>
-          <IonButton onClick={doLogin} expand="full" shape='round'>
+          <IonButton onClick={doLogin} expand="full" shape='round' color="tertiary">
             Login
           </IonButton>
 
