@@ -15,6 +15,7 @@ import {
   } from '@ionic/react';
   import { useState } from 'react';
   import { supabase } from '../utils/supaBaseClient';
+  import backgroundImg from '../images/space.gif';
   const AlertBox: React.FC<{ message: string; isOpen: boolean; onClose: () => void }> = ({ message, isOpen, onClose }) => {
     return (
       <IonAlert
@@ -50,13 +51,26 @@ import {
     };
     
     return (
-      <IonPage >
-        <IonHeader>
+      <IonPage>
+        <IonHeader >
           <IonToolbar>
             <IonTitle>Login</IonTitle>
           </IonToolbar>
         </IonHeader>
         <IonContent className='ion-padding'>
+        <img
+          src={backgroundImg}
+          alt="background"
+          style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          zIndex: -1,
+          }}
+        />
         <div
           style={{
           display: 'flex',
