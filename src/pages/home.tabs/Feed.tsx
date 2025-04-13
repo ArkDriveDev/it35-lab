@@ -2,7 +2,6 @@ import {
   IonButtons,
     IonContent, 
     IonHeader, 
-    IonMenuButton, 
     IonPage, 
     IonTitle, 
     IonToolbar 
@@ -14,9 +13,6 @@ const Feed: React.FC = () => {
     <IonPage>
       <IonHeader>
         <IonToolbar>
-          <IonButtons slot='start'>
-            <IonMenuButton></IonMenuButton>
-          </IonButtons>
           <IonTitle>Feed</IonTitle>
         </IonToolbar>
       </IonHeader>

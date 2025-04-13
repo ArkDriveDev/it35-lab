@@ -13,7 +13,7 @@ import {
       IonCard, 
       IonCardContent, 
   } from '@ionic/react';
-  import { useState } from 'react';
+  import { useState,useEffect } from 'react';
   import { supabase } from '../utils/supaBaseClient';
   import backgroundImg from '../images/space.gif';
   import Logo from '../images/logo.gif';
@@ -29,13 +29,31 @@ import {
     );
   };
     const Login: React.FC = () => {
-    const navigation = useIonRouter();
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [alertMessage, setAlertMessage] = useState('');
-    const [showAlert, setShowAlert] = useState(false);
-    const [showToast, setShowToast] = useState(false);
+      const navigation = useIonRouter();
+      const [email, setEmail] = useState('');
+      const [password, setPassword] = useState('');
+      const [alertMessage, setAlertMessage] = useState('');
+      const [showAlert, setShowAlert] = useState(false);
+      const [showToast, setShowToast] = useState(false);
   
+      useEffect(() => {
+        const style = document.createElement('style');
+        style.innerHTML = `
+          @keyframes blink {
+            0% { opacity: 1; }
+            50% { opacity: 0.4; }
+            100% { opacity: 1; }
+          }
+        `;
+        document.head.appendChild(style);
+      }, []);
+      const h1Style = {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: 'purple',
+        textShadow: '0 0 8px #d580ff, 0 0 15px #d580ff, 0 0 20px #aa00ff'
+      };
     const doLogin = async () => {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
   
@@ -109,13 +127,10 @@ import {
                   height: '20%',
                   transform: 'translate(-50%, -50%)',
               }}
-            />
-         
-             <h1 style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}>USER LOGIN</h1>
+            />    
+             <h1 style={h1Style}>
+                USER LOGIN
+             </h1>
             <IonInput
               label="Email" 
               labelPlacement="floating" 
@@ -160,5 +175,4 @@ import {
       </IonPage>
     );
   };
-  
   export default Login;
