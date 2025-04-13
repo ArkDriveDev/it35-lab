@@ -100,13 +100,20 @@ import {
         }}
         >
           
-          <IonCard style={{background:'transparent',   alignItems: 'center',
-                justifyContent: 'center',
-                marginTop:'10%',
-                width:'500px',
-                height:'600px',
-                backdropFilter: 'blur(3px)'
-                }}  >
+        <IonCard
+            style={{
+            background: 'transparent',
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginTop: '10%',
+            width: '500px',
+            height: '600px',
+            backdropFilter: 'blur(3px)',
+            border: '2px solid #ff69b4', 
+            boxShadow: '0 0 15px #ff69b4, 0 0 15px #ff69b4, 0 0 15px #ff69b4', 
+            borderRadius: '10px',
+            animation: 'glowBlink 1.8s infinite' 
+         }}>
             <IonCardContent>
               <div style={{
                 display: 'flex',
@@ -131,22 +138,36 @@ import {
              <h1 style={h1Style}>
                 USER LOGIN
              </h1>
-            <IonInput
-              label="Email" 
-              labelPlacement="floating" 
-              fill="outline"
-              type="email"
-              placeholder="Enter Email"
-              value={email}
-              onIonChange={e => setEmail(e.detail.value!)}
+             <IonInput
+                label="Email"
+                labelPlacement="floating"
+                fill="outline"
+                type="email"
+                placeholder="Enter Email"
+                value={email}
+                onIonChange={e => setEmail(e.detail.value!)}
+                style={{
+                boxShadow: '0 0 8px rgba(138, 43, 226, 0.6)', 
+                border: '1px solid rgba(138, 43, 226, 0.8)',
+                color: 'white', 
+                backdropFilter: 'blur(3px)', 
+             }}
             />
-            <IonInput style={{ marginTop:'10px' }}      
-              fill="outline"
-              type="password"
-              placeholder="Password"
-              value={password}
-              onIonChange={e => setPassword(e.detail.value!)}
-            >
+
+          <IonInput
+            fill="outline"
+            type="password"
+            placeholder="Password"
+            value={password}
+            onIonChange={e => setPassword(e.detail.value!)}
+          style={{
+             marginTop: '10px',
+             boxShadow: '0 0 8px rgba(138, 43, 226, 0.6)',
+             border: '1px solid rgba(138, 43, 226, 0.8)',
+             color: 'white',
+             backdropFilter: 'blur(3px)',
+          }}
+          >
             <IonInputPasswordToggle slot="end" color="tertiary"></IonInputPasswordToggle>
           </IonInput>
           </div>
