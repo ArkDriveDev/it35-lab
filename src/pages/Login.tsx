@@ -17,6 +17,7 @@ import {
   import { supabase } from '../utils/supaBaseClient';
   import backgroundImg from '../images/space.gif';
   import Logo from '../images/logo.gif';
+  import BGM from '../bgm/PARTY OF YOUR LIFETIME.mp3'
   const AlertBox: React.FC<{ message: string; isOpen: boolean; onClose: () => void }> = ({ message, isOpen, onClose }) => {
     return (
       <IonAlert
@@ -54,6 +55,21 @@ import {
         color: 'purple',
         textShadow: '0 0 8px #d580ff, 0 0 15px #d580ff, 0 0 20px #aa00ff'
       };
+
+      useEffect(() => {
+        const audio = new Audio(BGM); 
+        audio.loop = true;
+        audio.volume = 0.5;
+    
+       
+        audio.play().catch((err) => {
+          console.warn('Autoplay failed:', err);
+        });
+    
+        return () => {
+          audio.pause(); 
+        };
+      }, []);
     const doLogin = async () => {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
   
