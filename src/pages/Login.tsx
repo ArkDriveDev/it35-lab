@@ -56,20 +56,26 @@ import {
         textShadow: '0 0 8px #d580ff, 0 0 15px #d580ff, 0 0 20px #aa00ff'
       };
 
+      const [audio] = useState(new Audio(BGM));
+
       useEffect(() => {
-        const audio = new Audio(BGM); 
         audio.loop = true;
         audio.volume = 0.5;
     
-       
-        audio.play().catch((err) => {
-          console.warn('Autoplay failed:', err);
-        });
-    
-        return () => {
-          audio.pause(); 
+     
+        const handleUserClick = () => {
+          audio.play().catch((err) => {
+            console.warn('Autoplay failed:', err);
+          });
+          document.removeEventListener('click', handleUserClick);
         };
-      }, []);
+    
+        document.addEventListener('click', handleUserClick);
+        return () => {
+          document.removeEventListener('click', handleUserClick);
+        };
+      }, [audio]);
+    
     const doLogin = async () => {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
   
@@ -128,7 +134,7 @@ import {
             border: '2px solid #ff69b4', 
             boxShadow: '0 0 15px #ff69b4, 0 0 15px #ff69b4, 0 0 15px #ff69b4', 
             borderRadius: '10px',
-            animation: 'glowBlink 1.8s infinite' 
+            animation: 'glowBlink 1.8s infinite',
          }}>
             <IonCardContent>
               <div style={{
