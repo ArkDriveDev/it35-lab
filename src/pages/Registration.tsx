@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import {
     IonButton,
     IonContent,
@@ -44,6 +44,57 @@ const Register: React.FC = () => {
     const [alertMessage, setAlertMessage] = useState('');
     const [showAlert, setShowAlert] = useState(false);
 
+    useEffect(() => {
+        const style = document.createElement('style');
+        style.innerHTML = `
+          .glow-wrapper {
+            position: relative;
+            width: 1860px;
+            height: 600px;
+            margin-top: 10%;
+            border-radius: 10px;
+            backdrop-filter: blur(3px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+          }
+    
+          .glow-wrapper svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 2;
+          }
+    
+          .glow-border {
+            fill: none;
+            stroke: url(#animated-gradient);
+            stroke-width: 4;
+            stroke-linecap: round;
+            stroke-dasharray: 3000 1900;
+            stroke-dashoffset: 4900;
+            animation: dashmove 6s linear infinite;
+            filter: drop-shadow(0 0 10px #ff69b4)
+                    drop-shadow(0 0 20px #8a2be2)
+                    drop-shadow(0 0 30px #00bfff);
+            transition: filter 0.3s ease;
+          }
+    
+          @keyframes dashmove {
+            0% {
+              stroke-dashoffset: 4900;
+            }
+            100% {
+              stroke-dashoffset: 0;
+            }
+          }
+        `;
+        document.head.appendChild(style);
+      }, []);
     const handleOpenVerificationModal = () => {
         if (!email.endsWith("@nbsc.edu.ph")) {
             setAlertMessage("Only @nbsc.edu.ph emails are allowed to register.");
@@ -119,21 +170,15 @@ const Register: React.FC = () => {
                     zIndex: -1,
                 }}
                 />
-                 <IonCard
-                    style={{
+                 <div className="glow-wrapper">
+                    <IonCard style={{
                     background: 'transparent',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    marginTop: '10%',
-                    width: '1860px',
-                    height: '600px',
-                    backdropFilter: 'blur(3px)',
-                    border: '2px solid #ff69b4',
-                    boxShadow: '0 0 15px #ff69b4, 0 0 15px #ff69b4, 0 0 15px #ff69b4',
+                    width: '100%',
+                    height: '100%',
                     borderRadius: '10px',
-                    animation: 'borderBlink 2s infinite',
-                }}
-                >
+                    zIndex: 1,
+                    border: '2px solid transparent',
+                 }}>
                 <IonCardContent>
                     <h1>Create your account</h1>
 
@@ -199,6 +244,23 @@ const Register: React.FC = () => {
 
                 </IonCardContent>
                 </IonCard>
+                <svg>
+        <defs>
+          <linearGradient id="animated-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#ff69b4">
+              <animate attributeName="offset" values="0;1" dur="6s" repeatCount="indefinite" />
+            </stop>
+            <stop offset="0.5" stopColor="#8a2be2">
+              <animate attributeName="offset" values="0.5;1.5" dur="6s" repeatCount="indefinite" />
+            </stop>
+            <stop offset="1" stopColor="#00bfff">
+              <animate attributeName="offset" values="1;2" dur="6s" repeatCount="indefinite" />
+            </stop>
+          </linearGradient>
+        </defs>
+        <rect className="glow-border" x="2" y="2" width="calc(100% - 4px)" height="calc(100% - 4px)" rx="10" ry="10" />
+      </svg>
+    </div>
             </IonContent>
         </IonPage>
     );
