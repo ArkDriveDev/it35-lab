@@ -144,7 +144,7 @@ const Login: React.FC = () => {
               border: '2px solid #ff69b4',
               boxShadow: '0 0 15px #ff69b4, 0 0 15px #ff69b4, 0 0 15px #ff69b4',
               borderRadius: '10px',
-              animation: 'borderBlink 1.8s infinite',
+              animation: 'borderBlink 2s infinite',
             }}
           >
             <IonCardContent>
