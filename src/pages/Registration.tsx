@@ -44,6 +44,12 @@ const Register: React.FC = () => {
     const [alertMessage, setAlertMessage] = useState('');
     const [showAlert, setShowAlert] = useState(false);
 
+    const h1Style = {
+        display: 'flex',
+        color: 'skyblue',
+        textShadow: '0 0 8px #d580ff, 0 0 15px #d580ff, 0 0 20px #aa00ff'
+      };
+
     useEffect(() => {
         const style = document.createElement('style');
         style.innerHTML = `
@@ -180,7 +186,7 @@ const Register: React.FC = () => {
                     border: '2px solid transparent',
                  }}>
                 <IonCardContent>
-                    <h1>Create your account</h1>
+                    <h1 style={h1Style}>Create your account</h1>
 
                     <IonInput label="Username" labelPlacement="stacked" fill="outline" type="text" placeholder="Enter a unique username" value={username} onIonChange={e => setUsername(e.detail.value!)} style={{ marginTop: '15px' }} />
                     <IonInput label="First Name" labelPlacement="stacked" fill="outline" type="text" placeholder="Enter your first name" value={firstName} onIonChange={e => setFirstName(e.detail.value!)} style={{ marginTop: '15px' }} />

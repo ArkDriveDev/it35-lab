@@ -15,9 +15,9 @@ import {
 } from '@ionic/react';
 import { useState, useEffect } from 'react';
 import { supabase } from '../utils/supaBaseClient';
-import backgroundImg from '../images/space.gif';
-import Logo from '../images/logo.gif';
-import BGM from '../bgm/PARTY OF YOUR LIFETIME.mp3';
+import backgroundImg from '../images/Intro-HELLO-FUTURE-1920x1080_v2.gif';
+import Logo from '../images/wp-1661677480129.gif';
+import BGM from '../bgm/Warframe 1999 OST_ Cut Through.mp3';
 
 const AlertBox: React.FC<{ message: string; isOpen: boolean; onClose: () => void }> = ({ message, isOpen, onClose }) => {
   return (
@@ -43,25 +43,20 @@ const Login: React.FC = () => {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    color: 'purple',
-    textShadow: '0 0 8px #d580ff, 0 0 15px #d580ff, 0 0 20px #aa00ff'
+    color: 'White',
   };
 
   useEffect(() => {
     const style = document.createElement('style');
     style.innerHTML = `
       @keyframes borderBlink {
-        0% {
-          border-color: #ff69b4;
-          box-shadow: 0 0 15px #ff69b4, 0 0 15px #ff69b4, 0 0 15px #ff69b4;
+        0%, 100% {
+          border-color: #2B99E2;
+          box-shadow: 0 0 15px #2B99E2, 0 0 15px #2BAEE2, 0 0 15px#2B99E2;
         }
         50% {
-          border-color: transparent;
-          box-shadow: 0 0 5px transparent, 0 0 5px transparent, 0 0 5px transparent;
-        }
-        100% {
-          border-color: #ff69b4;
-          box-shadow: 0 0 15px #ff69b4, 0 0 15px #ff69b4, 0 0 15px #ff69b4;
+          border-color: #2B99E2;
+          box-shadow: 0 0 5px #2B99E2, 0 0 5px #2B99E2, 0 0 5px #2B99E2;
         }
       }
     `;
@@ -126,23 +121,21 @@ const Login: React.FC = () => {
         <div
           style={{
             display: 'flex',
-            justifyContent: 'center',
             alignItems: 'center',
+            marginLeft: '8%',
             height: '70%',
             width: '100%',
           }}
         >
           <IonCard
             style={{
-              background: 'transparent',
-              alignItems: 'center',
-              justifyContent: 'center',
+              background: 'black',
               marginTop: '10%',
               width: '500px',
               height: '600px',
-              backdropFilter: 'blur(3px)',
-              border: '2px solid #ff69b4',
-              boxShadow: '0 0 15px #ff69b4, 0 0 15px #ff69b4, 0 0 15px #ff69b4',
+              backdropFilter: 'blur(10px)',
+              border: '2px solid #2B80E2',
+              boxShadow: '0 0 15px #2B80E2, 0 0 15px #2B80E2, 0 0 15px #2B80E2',
               borderRadius: '10px',
               animation: 'borderBlink 2s infinite',
             }}
@@ -179,10 +172,10 @@ const Login: React.FC = () => {
                   value={email}
                   onIonChange={e => setEmail(e.detail.value!)}
                   style={{
-                    boxShadow: '0 0 8px rgba(138, 43, 226, 0.6)',
-                    border: '1px solid rgba(138, 43, 226, 0.8)',
+                    boxShadow: '0 0 8px rgba(43, 174, 226, 0.8)',
+                    border: '1px solid rgba(43, 174, 226, 0.8)',
                     color: 'white',
-                    backdropFilter: 'blur(3px)',
+                    backdropFilter: 'blur(6px)',
                   }}
                 />
                 <IonInput
@@ -193,20 +186,20 @@ const Login: React.FC = () => {
                   onIonChange={e => setPassword(e.detail.value!)}
                   style={{
                     marginTop: '10px',
-                    boxShadow: '0 0 8px rgba(138, 43, 226, 0.6)',
-                    border: '1px solid rgba(138, 43, 226, 0.8)',
+                      boxShadow: '0 0 8px rgba(43, 174, 226, 0.8)',
+                    border: '1px solid rgba(43, 174, 226, 0.8)',
                     color: 'white',
                     backdropFilter: 'blur(3px)',
                   }}
                 >
-                  <IonInputPasswordToggle slot="end" color="tertiary" />
+                  <IonInputPasswordToggle slot="end" color="secondary" />
                 </IonInput>
               </div>
-              <IonButton onClick={doLogin} expand="full" shape="round" color="tertiary">
+              <IonButton onClick={doLogin} expand="full" shape="round" color="secondary">
                 Login
               </IonButton>
 
-              <IonButton routerLink="/it35-lab/Registration" expand="full" fill="clear" shape="round">
+              <IonButton routerLink="/it35-lab/Registration" expand="full" fill="clear" shape="round" color="secondary">
                 Don't have an account? Register here
               </IonButton>
 
