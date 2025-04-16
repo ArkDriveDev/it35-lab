@@ -17,7 +17,7 @@ import {
 } from '@ionic/react';
 import { supabase } from '../utils/supaBaseClient';
 import bcrypt from 'bcryptjs';
-import background from '../images/regspace.gif';
+import background from '../images/nodes.gif';
 
 // Reusable Alert Component
 const AlertBox: React.FC<{ message: string; isOpen: boolean; onClose: () => void }> = ({ message, isOpen, onClose }) => {
@@ -47,7 +47,6 @@ const Register: React.FC = () => {
     const h1Style = {
         display: 'flex',
         color: 'skyblue',
-        textShadow: '0 0 8px #d580ff, 0 0 15px #d580ff, 0 0 20px #aa00ff'
       };
 
     useEffect(() => {
@@ -77,27 +76,29 @@ const Register: React.FC = () => {
           }
     
           .glow-border {
-            fill: none;
-            stroke: url(#animated-gradient);
-            stroke-width: 4;
-            stroke-linecap: round;
-            stroke-dasharray: 3000 1900;
-            stroke-dashoffset: 4900;
-            animation: dashmove 6s linear infinite;
-            filter: drop-shadow(0 0 10px #ff69b4)
-                    drop-shadow(0 0 20px #8a2be2)
-                    drop-shadow(0 0 30px #00bfff);
-            transition: filter 0.3s ease;
-          }
-    
-          @keyframes dashmove {
-            0% {
-              stroke-dashoffset: 4900;
-            }
-            100% {
-              stroke-dashoffset: 0;
-            }
-          }
+  fill: none;
+  stroke: url(#animated-gradient);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-dasharray: 600; /* Length of the stroke */
+  stroke-dashoffset: 600; /* Start with the stroke hidden */
+  animation: glow-move 4s ease-in-out forwards; /* Run animation once */
+  filter: drop-shadow(0 0 10px #69A5FF)
+          drop-shadow(0 0 20px #2BC6E2)
+          drop-shadow(0 0 30px #00bfff);
+}
+
+@keyframes glow-move {
+  0% {
+    stroke-dashoffset: 600; /* Start at the full length (hidden) */
+  }
+  100% {
+    stroke-dashoffset: 0; /* End with the full length revealed */
+  }
+}
+
+
+
         `;
         document.head.appendChild(style);
       }, []);
@@ -179,6 +180,7 @@ const Register: React.FC = () => {
                  <div className="glow-wrapper">
                     <IonCard style={{
                     background: 'transparent',
+                    backdropFilter: 'blur(20px)',
                     width: '100%',
                     height: '100%',
                     borderRadius: '10px',
@@ -188,21 +190,39 @@ const Register: React.FC = () => {
                 <IonCardContent>
                     <h1 style={h1Style}>Create your account</h1>
 
-                    <IonInput label="Username" labelPlacement="stacked" fill="outline" type="text" placeholder="Enter a unique username" value={username} onIonChange={e => setUsername(e.detail.value!)} style={{ marginTop: '15px' }} />
-                    <IonInput label="First Name" labelPlacement="stacked" fill="outline" type="text" placeholder="Enter your first name" value={firstName} onIonChange={e => setFirstName(e.detail.value!)} style={{ marginTop: '15px' }} />
-                    <IonInput label="Last Name" labelPlacement="stacked" fill="outline" type="text" placeholder="Enter your last name" value={lastName} onIonChange={e => setLastName(e.detail.value!)} style={{ marginTop: '15px' }} />
-                    <IonInput label="Email" labelPlacement="stacked" fill="outline" type="email" placeholder="youremail@nbsc.edu.ph" value={email} onIonChange={e => setEmail(e.detail.value!)} style={{ marginTop: '15px' }} />
-                    <IonInput label="Password" labelPlacement="stacked" fill="outline" type="password" placeholder="Enter password" value={password} onIonChange={e => setPassword(e.detail.value!)} style={{ marginTop: '15px' }} >
+                    <IonInput label="Username" labelPlacement="stacked" fill="outline" type="text" placeholder="Enter a unique username" value={username} onIonChange={e => setUsername(e.detail.value!)} style={{ marginTop: '15px', boxShadow: '0 0 8px rgba(43, 174, 226, 0.8)',
+                    border: '1px solid rgba(43, 174, 226, 0.8)',
+                    color: 'white',
+                    backdropFilter: 'blur(3px)', }} />
+                    <IonInput label="First Name" labelPlacement="stacked" fill="outline" type="text" placeholder="Enter your first name" value={firstName} onIonChange={e => setFirstName(e.detail.value!)} style={{ marginTop: '15px', boxShadow: '0 0 8px rgba(43, 174, 226, 0.8)',
+                    border: '1px solid rgba(43, 174, 226, 0.8)',
+                    color: 'white',
+                    backdropFilter: 'blur(3px)', }} />
+                    <IonInput label="Last Name" labelPlacement="stacked" fill="outline" type="text" placeholder="Enter your last name" value={lastName} onIonChange={e => setLastName(e.detail.value!)} style={{ marginTop: '15px', boxShadow: '0 0 8px rgba(43, 174, 226, 0.8)',
+                    border: '1px solid rgba(43, 174, 226, 0.8)',
+                    color: 'white',
+                    backdropFilter: 'blur(3px)', }} />
+                    <IonInput label="Email" labelPlacement="stacked" fill="outline" type="email" placeholder="youremail@nbsc.edu.ph" value={email} onIonChange={e => setEmail(e.detail.value!)} style={{ marginTop: '15px', boxShadow: '0 0 8px rgba(43, 174, 226, 0.8)',
+                    border: '1px solid rgba(43, 174, 226, 0.8)',
+                    color: 'white',
+                    backdropFilter: 'blur(3px)', }} />
+                    <IonInput label="Password" labelPlacement="stacked" fill="outline" type="password" placeholder="Enter password" value={password} onIonChange={e => setPassword(e.detail.value!)} style={{ marginTop: '15px', boxShadow: '0 0 8px rgba(43, 174, 226, 0.8)',
+                    border: '1px solid rgba(43, 174, 226, 0.8)',
+                    color: 'white',
+                    backdropFilter: 'blur(3px)', }} >
                     <IonInputPasswordToggle slot="end" />
                     </IonInput>
-                    <IonInput label="Confirm Password" labelPlacement="stacked" fill="outline" type="password" placeholder="Confirm password" value={confirmPassword} onIonChange={e => setConfirmPassword(e.detail.value!)} style={{ marginTop: '15px' }} >
+                    <IonInput label="Confirm Password" labelPlacement="stacked" fill="outline" type="password" placeholder="Confirm password" value={confirmPassword} onIonChange={e => setConfirmPassword(e.detail.value!)} style={{ marginTop: '15px', boxShadow: '0 0 8px rgba(43, 174, 226, 0.8)',
+                    border: '1px solid rgba(43, 174, 226, 0.8)',
+                    color: 'white',
+                    backdropFilter: 'blur(3px)', }} >
                     <IonInputPasswordToggle slot="end" />
                     </IonInput>
 
-                    <IonButton onClick={handleOpenVerificationModal} expand="full" shape='round' style={{ marginTop: '15px' }}>
+                    <IonButton onClick={handleOpenVerificationModal} expand="full" shape='round' style={{ marginTop: '15px' }}  color="secondary">
                         Register
                     </IonButton>
-                    <IonButton routerLink="/it35-lab" expand="full" fill="clear" shape='round'>
+                    <IonButton routerLink="/it35-lab" expand="full" fill="clear" shape='round'  color="secondary">
                         Already have an account? Sign in
                     </IonButton>
 
@@ -253,18 +273,18 @@ const Register: React.FC = () => {
                 <svg>
         <defs>
           <linearGradient id="animated-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#ff69b4">
-              <animate attributeName="offset" values="0;1" dur="6s" repeatCount="indefinite" />
+            <stop offset="0%" stopColor="#69A5FF">
+              <animate attributeName="offset" values="0;1" dur="2s" repeatCount="indefinite" />
             </stop>
-            <stop offset="0.5" stopColor="#8a2be2">
-              <animate attributeName="offset" values="0.5;1.5" dur="6s" repeatCount="indefinite" />
+            <stop offset="0.5" stopColor="#2BC6E2">
+              <animate attributeName="offset" values="0.5;1.5" dur="2s" repeatCount="indefinite" />
             </stop>
             <stop offset="1" stopColor="#00bfff">
-              <animate attributeName="offset" values="1;2" dur="6s" repeatCount="indefinite" />
+              <animate attributeName="offset" values="1;2" dur="2s" repeatCount="indefinite" />
             </stop>
           </linearGradient>
         </defs>
-        <rect className="glow-border" x="2" y="2" width="calc(100% - 4px)" height="calc(100% - 4px)" rx="10" ry="10" />
+        <rect className="glow-border" x="2" y="2" width="calc(100% - 4px)" height="calc(100% - 4px)" rx="10" ry="10" pathLength="600"/>
       </svg>
     </div>
             </IonContent>

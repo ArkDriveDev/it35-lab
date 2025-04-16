@@ -43,7 +43,7 @@ const Login: React.FC = () => {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    color: 'White',
+    color: 'skyblue',
   };
 
   useEffect(() => {
@@ -134,8 +134,8 @@ const Login: React.FC = () => {
               width: '500px',
               height: '600px',
               backdropFilter: 'blur(10px)',
-              border: '2px solid #2B80E2',
-              boxShadow: '0 0 15px #2B80E2, 0 0 15px #2B80E2, 0 0 15px #2B80E2',
+              border: '2px solid #2B99E2',
+              boxShadow: '0 0 15px #2B99E2, 0 0 15px #2B99E2, 0 0 15px #2B99E2',
               borderRadius: '10px',
               animation: 'borderBlink 2s infinite',
             }}
