@@ -15,6 +15,7 @@ interface Post {
 }
 
 const FeedContainer = () => {
+  const [postImageFile, setPostImageFile] = useState<File | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [postContent, setPostContent] = useState('');
   const [editingPost, setEditingPost] = useState<Post | null>(null);
@@ -124,7 +125,12 @@ const FeedContainer = () => {
                     <IonCardTitle>Create Post</IonCardTitle>
                 </IonCardHeader>
                 <IonCardContent>
-                    <IonInput value={postContent} onIonChange={e => setPostContent(e.detail.value!)} placeholder="Write a post..." />
+                <IonInput value={postContent} onIonChange={e => setPostContent(e.detail.value!)} placeholder="Write a post..." />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => setPostImageFile(e.target.files?.[0] ?? null)}
+                />
                 </IonCardContent>
                 <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '0.5rem' }}>
                     <IonButton onClick={createPost}>Post</IonButton>

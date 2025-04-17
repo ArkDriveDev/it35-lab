@@ -59,6 +59,15 @@ const Login: React.FC = () => {
           box-shadow: 0 0 5px #2B99E2, 0 0 5px #2B99E2, 0 0 5px #2B99E2;
         }
       }
+
+      @keyframes fadeIn {
+      0% {
+        opacity: 0; /* Start with the card being invisible */
+      }
+      100% {
+          opacity: 1; /* Fade in to fully visible */
+       }
+      }
     `;
     document.head.appendChild(style);
   }, []);
@@ -137,7 +146,7 @@ const Login: React.FC = () => {
               border: '2px solid #2B99E2',
               boxShadow: '0 0 15px #2B99E2, 0 0 15px #2B99E2, 0 0 15px #2B99E2',
               borderRadius: '10px',
-              animation: 'borderBlink 2s infinite',
+              animation: 'borderBlink 2s infinite, fadeIn 1.5s ease-in forwards',
             }}
           >
             <IonCardContent>
@@ -186,7 +195,7 @@ const Login: React.FC = () => {
                   onIonChange={e => setPassword(e.detail.value!)}
                   style={{
                     marginTop: '10px',
-                      boxShadow: '0 0 8px rgba(43, 174, 226, 0.8)',
+                    boxShadow: '0 0 8px rgba(43, 174, 226, 0.8)',
                     border: '1px solid rgba(43, 174, 226, 0.8)',
                     color: 'white',
                     backdropFilter: 'blur(3px)',

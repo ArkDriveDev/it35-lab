@@ -102,7 +102,6 @@ const EditProfile: React.FC = () => {
           return;
         }
       
-        // Handle avatar upload if the avatar file is changed
         let avatarUrl = avatarPreview;
       
         if (avatarFile) {
@@ -114,7 +113,7 @@ const EditProfile: React.FC = () => {
               .from('user-avatars')
               .upload(filePath, avatarFile, {
                 cacheControl: '3600',
-                upsert: true,  // Allows overwriting existing files
+                upsert: true,
               });
           
             if (uploadError) {
@@ -123,13 +122,11 @@ const EditProfile: React.FC = () => {
               return;
             }
           
-            // Retrieve the public URL
             const { data } = supabase.storage.from('user-avatars').getPublicUrl(filePath);
             avatarUrl = data.publicUrl;
           }
           
       
-        // Update user data in the users table
         const { error: updateError } = await supabase
           .from('users')
           .update({
@@ -146,7 +143,6 @@ const EditProfile: React.FC = () => {
           return;
         }
       
-        // Update the password if a new password is provided
         if (password) {
           const { error: passwordUpdateError } = await supabase.auth.updateUser({
             password: password,
