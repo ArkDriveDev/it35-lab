@@ -52,7 +52,7 @@ const FeedContainer = () => {
   const createPost = async () => {
     if (!postContent || !user || !username) return;
   
-    // Fetch avatar URL
+    // Fetch avatar
     const { data: userData, error: userError } = await supabase
       .from('users')
       .select('user_avatar_url')
@@ -60,17 +60,42 @@ const FeedContainer = () => {
       .single();
   
     if (userError) {
-      console.error('Error fetching user avatar:', userError);
+      console.error('Error fetching avatar:', userError);
       return;
     }
   
     const avatarUrl = userData?.user_avatar_url || 'https://ionicframework.com/docs/img/demos/avatar.svg';
   
-    // Insert post with avatar URL
+    let postImageUrl = '';
+  
+    // Upload image if exists
+    if (postImageFile) {
+      const fileExt = postImageFile.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random()}.${fileExt}`;
+      const filePath = `post-images/${user.id}/${fileName}`;
+  
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('post-images')
+        .upload(filePath, postImageFile);
+  
+      if (uploadError) {
+        console.error('Image upload error:', uploadError);
+      } else {
+        postImageUrl = supabase.storage.from('post-images').getPublicUrl(filePath).data.publicUrl;
+      }
+    }
+  
+    // Insert post
     const { data, error } = await supabase
       .from('posts')
       .insert([
-        { post_content: postContent, user_id: user.id, username, avatar_url: avatarUrl }
+        {
+          post_content: postContent,
+          user_id: user.id,
+          username,
+          avatar_url: avatarUrl,
+          post_image_url: postImageUrl,
+        }
       ])
       .select('*');
   
@@ -78,8 +103,10 @@ const FeedContainer = () => {
       setPosts([data[0] as Post, ...posts]);
     }
   
+    // Reset fields
     setPostContent('');
-  };
+    setPostImageFile(null);
+  };  
 
   const deletePost = async (post_id: string) => {
     await supabase.from('posts').delete().match({ post_id });
