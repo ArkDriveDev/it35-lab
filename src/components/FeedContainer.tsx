@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect,useRef} from 'react';
 import { IonApp, IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonButton, IonInput, IonLabel, IonModal, IonFooter, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle, IonAlert, IonText, IonAvatar, IonCol, IonGrid, IonRow, IonIcon, IonPopover } from '@ionic/react';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '../utils/supaBaseClient';
-import { colorFill, pencil, trash } from 'ionicons/icons';
+import {pencil,camera} from 'ionicons/icons';
 
 interface Post {
   post_id: string;
@@ -16,6 +16,7 @@ interface Post {
 }
 
 const FeedContainer = () => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [postImageFile, setPostImageFile] = useState<File | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
@@ -188,43 +189,60 @@ const FeedContainer = () => {
                     <IonCardTitle>Create Post</IonCardTitle>
                 </IonCardHeader>
                 <IonCardContent>
-    <IonInput 
-      value={postContent} 
-      onIonChange={e => setPostContent(e.detail.value!)} 
-      placeholder="Write a post..." 
-    />
-
-    <div style={{ marginTop: '1rem' }}>
-      <input
-        type="file"
-        accept="image/*"
-        onChange={(e) => {
-          const file = e.target.files?.[0];
-          setPostImageFile(file ?? null);
-          if (file) {
-            setImagePreview(URL.createObjectURL(file));
-          } else {
-            setImagePreview(null);
-          }
-        }}
+      <IonInput
+        value={postContent}
+        onIonChange={(e) => setPostContent(e.detail.value!)}
+        placeholder="Write a post..."
       />
 
-      {imagePreview && (
-        <div style={{ marginTop: '1rem' }}>
-          <img 
-            src={imagePreview} 
-            alt="Preview" 
-            style={{ width: '10%', borderRadius: '8px' }} 
-          />
-        </div>
-      )}
-    </div>
-  </IonCardContent>
+      <div style={{ marginTop: '1rem' }}>
+        {/* Hidden input field */}
+        <input
+          type="file"
+          accept="image/*"
+          style={{ display: 'none' }}
+          ref={fileInputRef} // Attach the ref to the input
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            setPostImageFile(file ?? null);
+            if (file) {
+              setImagePreview(URL.createObjectURL(file));
+            } else {
+              setImagePreview(null);
+            }
+          }}
+        />
 
-  <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '0.5rem' }}>
-    <IonButton onClick={createPost}>Post</IonButton>
-  </div>
-            </IonCard>
+        {/* Icon that triggers the file input */}
+        <IonIcon
+          icon={camera} // The camera icon
+          style={{
+            fontSize: '32px',
+            cursor: 'pointer',
+          }}
+          onClick={() => {
+            // Trigger the file input click when the icon is clicked
+            fileInputRef.current?.click();
+          }}
+        />
+
+        {/* Image preview */}
+        {imagePreview && (
+          <div style={{ marginTop: '1rem' }}>
+            <img
+              src={imagePreview}
+              alt="Preview"
+              style={{ width: '10%', borderRadius: '8px' }}
+            />
+          </div>
+        )}
+      </div>
+    </IonCardContent>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '0.5rem' }}>
+                <IonButton onClick={createPost}>Post</IonButton>
+              </div>
+           </IonCard>
 
               {posts.map(post => (
                 <IonCard key={post.post_id} style={{ marginTop: '2rem' }}>
