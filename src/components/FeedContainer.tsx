@@ -110,12 +110,45 @@ const FeedContainer = () => {
     setPostContent('');
     setPostImageFile(null);
   };  
-
-  const deletePost = async (post_id: string) => {
-    await supabase.from('posts').delete().match({ post_id });
-    setPosts(posts.filter(post => post.post_id !== post_id));
+  
+  const getImagePath = (url: string) => {
+    const match = url.match(/post-images\/(.+)/);
+    return match ? match[1] : null;
   };
 
+  const deletePost = async (post_id: string, imagePath?: string | null) => {
+    console.log('Deleting post:', post_id);
+    console.log('Image path to delete:', imagePath);
+  
+    // Delete post data from 'posts' table
+    const { error: deletePostError } = await supabase
+      .from('posts')
+      .delete()
+      .match({ post_id });
+    if (deletePostError) {
+      console.error('Error deleting post:', deletePostError);
+      return;
+    }
+  
+    // If there is an image path, delete the image from storage
+    if (imagePath) {
+      console.log('Attempting to delete image at:', imagePath);
+      const { data: deleteData, error: deleteImageError } = await supabase
+      .storage
+      .from('post-images')
+      .remove([imagePath]); // This is the path inside the bucket
+    
+      if (deleteImageError) {
+        console.error('Error deleting image:', deleteImageError.message);
+       } else {
+          console.log('Image deleted successfully:', deleteData);
+      }
+    }
+  
+    // Update state after deleting post
+    setPosts(posts.filter(post => post.post_id !== post_id));
+  };
+  
   const startEditingPost = (post: Post) => {
     setEditingPost(post);
     setPostContent(post.post_content);
@@ -241,9 +274,16 @@ const FeedContainer = () => {
                   <IonButton fill="clear" onClick={() => { startEditingPost(post); setPopoverState({ open: false, event: null, postId: null }); }}>
                     Edit
                   </IonButton>
-                  <IonButton fill="clear" color="danger" onClick={() => { deletePost(post.post_id); setPopoverState({ open: false, event: null, postId: null }); }}>
-                    Delete
+                  <IonButton
+                    fill="clear"
+                    color="danger"
+                    onClick={() => {
+                    const imagePath = getImagePath(post.post_image_url ?? ''); 
+                    deletePost(post.post_id, imagePath);
+                    setPopoverState({ open: false, event: null, postId: null });
+                    }}>Delete
                   </IonButton>
+
                 </IonPopover>
               </IonCard>
               ))}
