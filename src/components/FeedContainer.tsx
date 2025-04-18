@@ -19,6 +19,8 @@ const FeedContainer = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [postImageFile, setPostImageFile] = useState<File | null>(null);
+  const [editImagePreview, setEditImagePreview] = useState<string | null>(null);
+  const [editPostImageFile, setEditPostImageFile] = useState<File | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [postContent, setPostContent] = useState('');
   const [editingPost, setEditingPost] = useState<Post | null>(null);
@@ -154,6 +156,8 @@ const FeedContainer = () => {
   const startEditingPost = (post: Post) => {
     setEditingPost(post);
     setPostContent(post.post_content);
+    setEditImagePreview(null);
+    setEditPostImageFile(null);
     setIsModalOpen(true);
   };
 
@@ -313,19 +317,58 @@ const FeedContainer = () => {
         </IonContent>
 
         <IonModal isOpen={isModalOpen} onDidDismiss={() => setIsModalOpen(false)}>
-          <IonHeader>
-            <IonToolbar>
-              <IonTitle>Edit Post</IonTitle>
-            </IonToolbar>
-          </IonHeader>
-          <IonContent>
-            <IonInput value={postContent} onIonChange={e => setPostContent(e.detail.value!)} placeholder="Edit your post..." />
-          </IonContent>
-          <IonFooter>
-            <IonButton onClick={savePost}>Save</IonButton>
-            <IonButton onClick={() => setIsModalOpen(false)}>Cancel</IonButton>
-          </IonFooter>
-        </IonModal>
+  <IonHeader>
+    <IonToolbar>
+      <IonTitle>Edit Post</IonTitle>
+    </IonToolbar>
+  </IonHeader>
+
+  <IonContent className="ion-padding">
+    <IonInput
+      value={postContent}
+      onIonChange={(e) => setPostContent(e.detail.value!)}
+      placeholder="Edit your post..."
+    />
+
+    {(editImagePreview || editingPost?.post_image_url) && (
+      <div style={{ marginTop: '1rem' }}>
+        <img
+          src={editImagePreview || editingPost?.post_image_url}
+          alt="Preview"
+          style={{ width: '40%', borderRadius: '8px' }}
+        />
+      </div>
+    )}
+
+    <input
+      type="file"
+      accept="image/*"
+      ref={fileInputRef}
+      style={{ display: 'none' }}
+      onChange={(e) => {
+        const file = e.target.files?.[0];
+        setEditPostImageFile(file ?? null);
+        if (file) {
+          setEditImagePreview(URL.createObjectURL(file));
+        }
+      }}
+    />
+
+    <div style={{ marginTop: '1rem' }}>
+      <IonIcon
+        icon={camera}
+        style={{ fontSize: '32px', cursor: 'pointer' }}
+        onClick={() => fileInputRef.current?.click()}
+      />
+    </div>
+  </IonContent>
+
+  <IonFooter className="ion-padding">
+    <IonButton onClick={savePost}>Save</IonButton>
+    <IonButton onClick={() => setIsModalOpen(false)}>Cancel</IonButton>
+  </IonFooter>
+</IonModal>
+
 
         <IonAlert
           isOpen={isAlertOpen}
