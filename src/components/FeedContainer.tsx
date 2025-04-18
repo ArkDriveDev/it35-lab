@@ -12,6 +12,7 @@ interface Post {
   post_content: string;
   post_created_at: string;
   post_updated_at: string;
+  post_image_url?: string;
 }
 
 const FeedContainer = () => {
@@ -79,7 +80,8 @@ const FeedContainer = () => {
         .upload(filePath, postImageFile);
   
       if (uploadError) {
-        console.error('Image upload error:', uploadError);
+        console.error('Image upload error:', uploadError); // Log the error details
+        alert(`Error uploading image: ${uploadError.message}`); // Provide feedback to the user
       } else {
         postImageUrl = supabase.storage.from('post-images').getPublicUrl(filePath).data.publicUrl;
       }
@@ -190,11 +192,19 @@ const FeedContainer = () => {
                 </IonCardHeader>
               
                 <IonCardContent>
-                    <IonText style={{ color: 'black' }}>
-                        <h1>{post.post_content}</h1>
-                    </IonText>
-                </IonCardContent>
-                
+                  <IonText style={{ color: 'black' }}>
+                    <h1>{post.post_content}</h1>
+                  </IonText>
+
+                    {post.post_image_url && (
+                    <img
+                    src={post.post_image_url}
+                    alt="Post"
+                    style={{ width: '10%', height:'5%', borderRadius: '10px', marginTop: '10px' }}
+                  />
+                   )}
+              </IonCardContent>
+
                 {/* Popover with Edit and Delete options */}
                 <IonPopover
                   isOpen={popoverState.open && popoverState.postId === post.post_id}
