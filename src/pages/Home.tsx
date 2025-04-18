@@ -1,19 +1,14 @@
 import { 
-  IonButton,
-    IonButtons,
-      IonContent, 
-      IonHeader, 
       IonIcon, 
       IonLabel, 
-      IonMenuButton, 
-      IonPage, 
       IonRouterOutlet, 
       IonTabBar, 
       IonTabButton, 
       IonTabs, 
-      IonTitle, 
-      IonToolbar 
+      IonButton
   } from '@ionic/react';
+import { useState} from 'react';
+import { chevronDownOutline, chevronUpOutline } from 'ionicons/icons';
 import { IonReactRouter } from '@ionic/react-router';
 import { bookOutline, search, star } from 'ionicons/icons';
 import { Route, Redirect } from 'react-router';
@@ -23,7 +18,7 @@ import Feed from './home.tabs/Feed';
 import Search from './home.tabs/Search';
   
   const Home: React.FC = () => {
-
+    const [showTabBar, setShowTabBar] = useState(true);
     const tabs = [
       {name:'Feed', tab:'feed',url: '/it35-lab/app/home/feed', icon: bookOutline},
       {name:'Search', tab:'search', url: '/it35-lab/app/home/search', icon: search},
@@ -33,16 +28,29 @@ import Search from './home.tabs/Search';
     return (
       <IonReactRouter>
         <IonTabs>
-          <IonTabBar slot="bottom">
+          {/* Toggle Button */}
+          <div style={{ position: 'fixed', bottom: showTabBar ? '0px' : '0', right: '1rem', zIndex: 1000 }}>
+            <IonButton
+            fill="clear"
+            onClick={() => setShowTabBar(prev => !prev)}
+           style={{ fontSize: '15px' }}
+          >
+            <IonIcon icon={showTabBar ? chevronDownOutline : chevronUpOutline} />
+            </IonButton>
+          </div>
 
-            {tabs.map((item, index) => (
+          {/* Conditional TabBar */}
+          {showTabBar && (
+            <IonTabBar slot="bottom">
+              {tabs.map((item, index) => (
               <IonTabButton key={index} tab={item.tab} href={item.url}>
-                <IonIcon icon={item.icon} />
-                <IonLabel>{item.name}</IonLabel>
+              <IonIcon icon={item.icon} />
+              <IonLabel>{item.name}</IonLabel>
               </IonTabButton>
-            ))}
-            
-          </IonTabBar>
+              ))}
+            </IonTabBar>
+          )}
+
         <IonRouterOutlet>
 
           <Route exact path="/it35-lab/app/home/feed" render={Feed} />
