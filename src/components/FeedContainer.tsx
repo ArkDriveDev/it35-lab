@@ -3,6 +3,8 @@ import { IonApp, IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonButton
 import { User } from '@supabase/supabase-js';
 import { supabase } from '../utils/supaBaseClient';
 import { pencil, camera } from 'ionicons/icons';
+import Picker from '@emoji-mart/react';
+import data from '@emoji-mart/data';
 
 interface Post {
   post_id: string;
@@ -18,7 +20,6 @@ interface Post {
 const FeedContainer = () => {
   const createFileInputRef = useRef<HTMLInputElement>(null);
   const editFileInputRef = useRef<HTMLInputElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [postImageFile, setPostImageFile] = useState<File | null>(null);
   const [editImagePreview, setEditImagePreview] = useState<string | null>(null);
@@ -31,6 +32,12 @@ const FeedContainer = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const [popoverState, setPopoverState] = useState<{ open: boolean; event: Event | null; postId: string | null }>({ open: false, event: null, postId: null });
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+
+  const addEmoji = (emoji: any) => {
+    setPostContent((prev) => prev + emoji.native);
+  };
+
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -256,38 +263,36 @@ const FeedContainer = () => {
                   <IonCardTitle>Create Post</IonCardTitle>
                 </IonCardHeader>
                 <IonCardContent>
-                  <IonInput
-                    value={postContent}
-                    onIonChange={(e) => setPostContent(e.detail.value!)}
-                    placeholder="Write a post..."
-                  />
-
-                  <div style={{ marginTop: '1rem' }}>
-                    {/* Hidden input field */}
-                    <input
-                      type="file"
-                      accept="image/*"
-                      style={{ display: 'none' }}
-                      ref={createFileInputRef}
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        setPostImageFile(file ?? null);
-                        if (file) {
-                          setImagePreview(URL.createObjectURL(file));
-                        } else {
-                          setImagePreview(null);
-                        }
-                      }}
+                  <div>
+                    {/* Input for post content */}
+                    <IonInput
+                      value={postContent}
+                      onIonChange={(e) => setPostContent(e.detail.value!)}
+                      placeholder="Write a post..."
                     />
 
-                    <IonIcon
-                      icon={camera}
-                      style={{ fontSize: '32px', cursor: 'pointer' }}
-                      onClick={() => {
-                        createFileInputRef.current?.click();
-                      }}
-                    />
+                    {/* Camera Icon */}
+                    <div style={{ marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                      <IonIcon
+                        icon={camera}
+                        style={{ fontSize: '28px', cursor: 'pointer' }}
+                        onClick={() => createFileInputRef.current?.click()}
+                      />
 
+                      {/* Emoji Icon */}
+                      <IonIcon
+                        icon="😊"
+                        style={{ fontSize: '28px', cursor: 'pointer' }}
+                        onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                      />
+
+                      {/* Emoji Picker */}
+                      {showEmojiPicker && (
+                        <div style={{ position: 'absolute', zIndex: 999 }}>
+                          <Picker data={data} onEmojiSelect={addEmoji} />
+                        </div>
+                      )}
+                    </div>
 
                     {/* Image preview */}
                     {imagePreview && (
@@ -410,7 +415,6 @@ const FeedContainer = () => {
                 }
               }}
             />
-
             <IonIcon
               icon={camera}
               style={{ fontSize: '32px', cursor: 'pointer' }}
