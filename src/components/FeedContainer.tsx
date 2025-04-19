@@ -34,6 +34,7 @@ const FeedContainer = () => {
   const [popoverState, setPopoverState] = useState<{ open: boolean; event: Event | null; postId: string | null }>({ open: false, event: null, postId: null });
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [editPostContent, setEditPostContent] = useState('');
+  const [showEditEmojiPicker, setShowEditEmojiPicker] = useState(false);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -64,6 +65,13 @@ const FeedContainer = () => {
     if (emoji && emoji.native) {
       setPostContent(prevContent => prevContent + emoji.native);
       setShowEmojiPicker(false);
+    }
+  };
+
+  const addEmojiToEdit = (emoji: any) => {
+    if (emoji?.native) {
+      setEditPostContent(prev => prev + emoji.native);
+      setShowEditEmojiPicker(false);
     }
   };
 
@@ -374,12 +382,12 @@ const FeedContainer = () => {
             <IonLabel>Loading...</IonLabel>
           )}
         </IonContent>
-
-        <IonModal isOpen={isModalOpen}  onDidDismiss={() => {
+        <IonModal isOpen={isModalOpen} onDidDismiss={() => {
           setIsModalOpen(false);
           setEditPostContent('');
           setEditImagePreview(null);
           setEditPostImageFile(null);
+          setShowEditEmojiPicker(false);
         }}>
           <IonHeader>
             <IonToolbar>
@@ -389,29 +397,75 @@ const FeedContainer = () => {
 
           <IonContent className="ion-padding">
             <IonInput
-              value={editPostContent} // Use editPostContent here
+              value={editPostContent}
               onIonChange={(e) => setEditPostContent(e.detail.value!)}
               placeholder="Edit your post..."
             />
 
+            {/* Emoji picker positioned above the image preview */}
+            <div style={{
+              position: 'relative',
+              marginTop: '10px',
+              display: 'flex',
+              gap: '10px'
+            }}>
+              <IonIcon
+                icon={happyOutline}
+                style={{
+                  fontSize: '32px',
+                  cursor: 'pointer',
+                  color: '#3880ff'
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowEditEmojiPicker(!showEditEmojiPicker);
+                }}
+              />
+
+              <IonIcon
+                icon={camera}
+                style={{
+                  fontSize: '32px',
+                  cursor: 'pointer',
+                  color: '#3880ff'
+                }}
+                onClick={() => editFileInputRef.current?.click()}
+              />
+
+              {showEditEmojiPicker && (
+                <div style={{
+                  position: 'absolute',
+                  zIndex: 1000,
+                  bottom: '100%',
+                  left: 0,
+                  marginBottom: '10px'
+                }}>
+                  <Picker
+                    data={data}
+                    onEmojiSelect={addEmojiToEdit}
+                    onClickOutside={() => setShowEditEmojiPicker(false)}
+                  />
+                </div>
+              )}
+            </div>
+
             {(editImagePreview || editingPost?.post_image_url) && (
               <div style={{
                 position: 'relative',
-                marginTop: '1rem',
-                display: 'inline-block' // This makes the container fit the image size
+                marginTop: '1rem'
               }}>
                 <img
                   src={editImagePreview || editingPost?.post_image_url}
                   alt="Preview"
                   style={{
                     width: '100%',
-                    maxWidth: '400px', // Adjust as needed
+                    maxWidth: '400px',
                     borderRadius: '8px',
-                    display: 'block' // Removes extra space below image
+                    display: 'block'
                   }}
                 />
 
-                {/* Camera icon positioned absolutely over the image */}
+                {/* Camera icon overlay on image */}
                 <div style={{
                   position: 'absolute',
                   bottom: '10px',
@@ -446,15 +500,6 @@ const FeedContainer = () => {
                 }
               }}
             />
-
-            {/* Fallback camera icon when no image exists */}
-            {!(editImagePreview || editingPost?.post_image_url) && (
-              <IonIcon
-                icon={camera}
-                style={{ fontSize: '32px', cursor: 'pointer', marginTop: '1rem' }}
-                onClick={() => editFileInputRef.current?.click()}
-              />
-            )}
           </IonContent>
 
           <IonFooter className="ion-padding">
