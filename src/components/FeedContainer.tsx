@@ -59,21 +59,12 @@ const FeedContainer = () => {
     fetchPosts();
   }, []);
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (showEmojiPicker && !event.composedPath().some((el: any) => el.classList?.contains('emoji-mart'))) {
-        setShowEmojiPicker(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showEmojiPicker]);
-
   // Modify your addEmoji function to close the picker
   const addEmoji = (emoji: any) => {
-    setPostContent((prev) => prev + emoji.native);
-    setShowEmojiPicker(false); // Close picker after selection
+    if (emoji && emoji.native) {
+      setPostContent(prevContent => prevContent + emoji.native);
+      setShowEmojiPicker(false);
+    }
   };
 
   const createPost = async () => {
@@ -280,6 +271,7 @@ const FeedContainer = () => {
                     value={postContent}
                     onIonChange={(e) => setPostContent(e.detail.value!)}
                     placeholder="Write a post..."
+                    style={{ border: '1px solid #ccc', borderRadius: '8px', padding: '10px', marginBottom: '10px' }}
                   />
 
                   <div style={{ marginTop: '1rem' }}>
@@ -303,22 +295,35 @@ const FeedContainer = () => {
                     <IonIcon
                       icon={camera}
                       style={{ fontSize: '32px', cursor: 'pointer' }}
-                      onClick={() => {
-                        createFileInputRef.current?.click();
-                      }}    
+                      onClick={() => createFileInputRef.current?.click()}
                     />
-                     <IonIcon
+                    <div style={{ position: 'relative', display: 'inline-block' }}>
+                      <IonIcon
                         icon={happyOutline}
-                        style={{ fontSize: '32px', cursor: 'pointer' }}
-                        onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                        style={{ fontSize: '32px', cursor: 'pointer', marginLeft: '10px' }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowEmojiPicker(!showEmojiPicker);
+                        }}
                       />
 
-                      {/* Emoji Picker shown above */}
                       {showEmojiPicker && (
-                        <div style={{ position: 'absolute', zIndex: 999, top: '1px', left: '20' }}>
-                          <Picker data={data} onEmojiSelect={addEmoji} />
+                        <div style={{
+                          position: 'absolute',
+                          zIndex: 200,
+                          bottom: '380%',
+                          left: 0,
+                          marginBottom: '1px',
+                          height:'20%'
+                        }}>
+                          <Picker
+                            data={data}
+                            onEmojiSelect={addEmoji}
+                            onClickOutside={() => setShowEmojiPicker(false)}
+                          />
                         </div>
                       )}
+                    </div>
 
                     {/* Image preview */}
                     {imagePreview && (
