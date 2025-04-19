@@ -20,6 +20,7 @@ interface Post {
 const FeedContainer = () => {
   const createFileInputRef = useRef<HTMLInputElement>(null);
   const editFileInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [postImageFile, setPostImageFile] = useState<File | null>(null);
   const [editImagePreview, setEditImagePreview] = useState<string | null>(null);
@@ -58,7 +59,6 @@ const FeedContainer = () => {
     fetchPosts();
   }, []);
 
-  // Add this useEffect to handle clicks outside the emoji picker
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (showEmojiPicker && !event.composedPath().some((el: any) => el.classList?.contains('emoji-mart'))) {
@@ -75,6 +75,7 @@ const FeedContainer = () => {
     setPostContent((prev) => prev + emoji.native);
     setShowEmojiPicker(false); // Close picker after selection
   };
+
   const createPost = async () => {
     if (!postContent || !user || !username) return;
 
@@ -275,36 +276,49 @@ const FeedContainer = () => {
                   <IonCardTitle>Create Post</IonCardTitle>
                 </IonCardHeader>
                 <IonCardContent>
-                  <div>
-                    {/* Input for post content */}
-                    <IonInput
-                      value={postContent}
-                      onIonChange={(e) => setPostContent(e.detail.value!)}
-                      placeholder="Write a post..."
+                  <IonInput
+                    value={postContent}
+                    onIonChange={(e) => setPostContent(e.detail.value!)}
+                    placeholder="Write a post..."
+                  />
+
+                  <div style={{ marginTop: '1rem' }}>
+                    {/* Hidden input field */}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      style={{ display: 'none' }}
+                      ref={createFileInputRef}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        setPostImageFile(file ?? null);
+                        if (file) {
+                          setImagePreview(URL.createObjectURL(file));
+                        } else {
+                          setImagePreview(null);
+                        }
+                      }}
                     />
 
-                    {/* Camera Icon */}
-                    <div style={{ marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                      <IonIcon
-                        icon={camera}
-                        style={{ fontSize: '28px', cursor: 'pointer' }}
-                        onClick={() => createFileInputRef.current?.click()}
-                      />
-
-                      {/* Emoji Icon */}
-                      <IonIcon
+                    <IonIcon
+                      icon={camera}
+                      style={{ fontSize: '32px', cursor: 'pointer' }}
+                      onClick={() => {
+                        createFileInputRef.current?.click();
+                      }}    
+                    />
+                     <IonIcon
                         icon={happyOutline}
-                        style={{ fontSize: '28px', cursor: 'pointer' }}
+                        style={{ fontSize: '32px', cursor: 'pointer' }}
                         onClick={() => setShowEmojiPicker(!showEmojiPicker)}
                       />
 
-                      {/* Emoji Picker */}
+                      {/* Emoji Picker shown above */}
                       {showEmojiPicker && (
-                        <div style={{ position: 'absolute', zIndex: 999 }}>
+                        <div style={{ position: 'absolute', zIndex: 999, top: '1px', left: '20' }}>
                           <Picker data={data} onEmojiSelect={addEmoji} />
                         </div>
                       )}
-                    </div>
 
                     {/* Image preview */}
                     {imagePreview && (
