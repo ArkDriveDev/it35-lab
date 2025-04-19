@@ -100,6 +100,9 @@ const Login: React.FC = () => {
       return;
     }
 
+    audio.pause();
+    audio.currentTime = 0;
+
     setShowToast(true);
     setTimeout(() => {
       navigation.push('/it35-lab/app', 'forward', 'replace');
