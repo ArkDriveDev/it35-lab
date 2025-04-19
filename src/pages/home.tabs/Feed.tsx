@@ -16,7 +16,9 @@ const glow = {
 const h1Style = {
   ...glow,
   animationDelay: '0.1s',
-  color: 'skyblue',
+  color: ' #2B99E2',
+  border: ' #2B99E2',
+  boxShadow: '0 0 6px #2B99E2, 0 0 6px #2B99E2, 0 0 6px #2B99E2',
 };
 const Feed: React.FC = () => {
   return (

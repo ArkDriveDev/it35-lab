@@ -160,19 +160,19 @@ const Register: React.FC = () => {
     <IonPage>
       <IonContent className='ion-padding'>
 
-      <img
-  src={background}
-  alt="background"
-  style={{
-    position: 'fixed', // Change from absolute to fixed to make it adjust with page scroll
-    top: 0,
-    left: 0,
-    width: '100%', // Ensure it takes the full width of the viewport
-    height: '100%', // Ensure it takes the full height of the viewport
-    objectFit: 'cover', // Make sure the image covers the entire screen without distortion
-    zIndex: -1, // Ensure the image stays behind all content
-  }}
-/>
+        <img
+          src={background}
+          alt="background"
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100%', 
+            height: '100%', 
+            objectFit: 'cover', 
+            zIndex: -1, 
+          }}
+        />
 
         <div className="glow-wrapper">
           <IonCard
@@ -180,13 +180,13 @@ const Register: React.FC = () => {
               background: 'transparent',
               backdropFilter: 'blur(20px)',
               width: '100%',
-              maxWidth: '700px', 
-              height: 'auto', 
+              maxWidth: '700px',
+              height: 'auto',
               borderRadius: '10px',
               zIndex: 1,
               border: '2px solid transparent',
-              padding: '10px 20px',  
-              marginTop: '20px',  
+              padding: '10px 20px',
+              marginTop: '20px',
             }}
           >
             <IonCardContent>

@@ -5,6 +5,8 @@ import { supabase } from '../utils/supaBaseClient';
 import { pencil, camera, happyOutline } from 'ionicons/icons';
 import Picker from '@emoji-mart/react';
 import data from '@emoji-mart/data';
+import background from '../images/nodes.gif';
+import background2 from '../images/glow.jpg';
 
 interface Post {
   post_id: string;
@@ -35,6 +37,52 @@ const FeedContainer = () => {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [editPostContent, setEditPostContent] = useState('');
   const [showEditEmojiPicker, setShowEditEmojiPicker] = useState(false);
+
+  const glow = {
+    animation: 'blink 2s infinite',
+    filter: 'drop-shadow(0 0 8px white)',
+  };
+
+  const h1Style = {
+    ...glow,
+    animationDelay: '0.1s',
+    color: ' #2B99E2',
+  };
+  const h2Style = {
+    display: 'flex',
+    color: 'skyblue',
+    margin: '3%'
+  };
+  const h3Style = {
+    display: 'flex',
+    color: 'skyblue',
+  };
+
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.innerHTML = `
+      @keyframes borderBlink {
+        0%, 100% {
+          border-color: #2B99E2;
+          box-shadow: 0 0 15px #2B99E2, 0 0 15px #2BAEE2, 0 0 15px#2B99E2;
+        }
+        50% {
+          border-color: #2B99E2;
+          box-shadow: 0 0 5px #2B99E2, 0 0 5px #2B99E2, 0 0 5px #2B99E2;
+        }
+      }
+
+      @keyframes fadeIn {
+      0% {
+        opacity: 0; /* Start with the card being invisible */
+      }
+      100% {
+          opacity: 1; /* Fade in to fully visible */
+       }
+      }
+    `;
+    document.head.appendChild(style);
+  }, []);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -235,16 +283,37 @@ const FeedContainer = () => {
         <IonContent>
           {user ? (
             <>
-              <IonCard>
+              <IonCard style={{
+                background: 'transparent',
+                border: ' #2B99E2',
+                boxShadow: '0 0 15px #2B99E2, 0 0 15px #2B99E2, 0 0 15px #2B99E2',
+                margin: '4%'
+              }}>
                 <IonCardHeader>
-                  <IonCardTitle>Create Post</IonCardTitle>
+                  <IonCardTitle style={h1Style}>Create Post</IonCardTitle>
                 </IonCardHeader>
                 <IonCardContent>
+                  <img
+                    src={background}
+                    alt="background"
+                    style={{
+                      position: 'fixed',
+                      top: 0,
+                      left: 0,
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      zIndex: -1,
+                    }}
+                  />
                   <IonInput
                     value={postContent}
                     onIonChange={(e) => setPostContent(e.detail.value!)}
                     placeholder="Write a post..."
-                    style={{ border: '1px solid #ccc', borderRadius: '8px', padding: '10px', marginBottom: '10px' }}
+                    style={{
+                      border: '1px solid #ccc', borderRadius: '8px', padding: '10px', marginBottom: '10px',
+                      color: 'skyblue',
+                    }}
                   />
 
                   <div style={{ marginTop: '1rem' }}>
@@ -267,13 +336,13 @@ const FeedContainer = () => {
 
                     <IonIcon
                       icon={camera}
-                      style={{ fontSize: '32px', cursor: 'pointer' }}
+                      style={{ ...glow, fontSize: '32px', cursor: 'pointer', color: 'white' }}
                       onClick={() => createFileInputRef.current?.click()}
                     />
                     <div style={{ position: 'relative', display: 'inline-block' }}>
                       <IonIcon
                         icon={happyOutline}
-                        style={{ fontSize: '32px', cursor: 'pointer', marginLeft: '10px' }}
+                        style={{ ...glow, fontSize: '32px', cursor: 'pointer', marginLeft: '10px', color: 'white' }}
                         onClick={(e) => {
                           e.stopPropagation();
                           setShowEmojiPicker(!showEmojiPicker);
@@ -312,12 +381,17 @@ const FeedContainer = () => {
                 </IonCardContent>
 
                 <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '0.5rem' }}>
-                  <IonButton onClick={createPost}>Post</IonButton>
+                  <IonButton onClick={createPost} color="secondary">Post</IonButton>
                 </div>
               </IonCard>
 
               {posts.map(post => (
-                <IonCard key={post.post_id} style={{ marginTop: '2rem' }}>
+                <IonCard key={post.post_id} style={{
+                  background: 'transparent',
+                  border: '2px solid #2B99E2',
+                  boxShadow: '0 0 15px #2B99E2, 0 0 15px #2B99E2, 0 0 15px #2B99E2',
+                  animation: 'borderBlink 2s infinite, fadeIn 1.5s ease-in forwards',
+                }}>
                   <IonCardHeader>
                     <IonRow>
                       <IonCol size="1.85">
@@ -326,8 +400,8 @@ const FeedContainer = () => {
                         </IonAvatar>
                       </IonCol>
                       <IonCol>
-                        <IonCardTitle style={{ marginTop: '10px' }}>{post.username}</IonCardTitle>
-                        <IonCardSubtitle>{new Date(post.post_created_at).toLocaleString()}</IonCardSubtitle>
+                        <IonCardTitle style={{ ...glow, marginTop: '10px' }}>{post.username}</IonCardTitle>
+                        <IonCardSubtitle style={h3Style}>{new Date(post.post_created_at).toLocaleString()}</IonCardSubtitle>
                       </IonCol>
                       <IonCol size="auto">
                         {/* Pencil icon triggers popover */}
@@ -342,7 +416,20 @@ const FeedContainer = () => {
                   </IonCardHeader>
 
                   <IonCardContent>
-                    <IonText style={{ color: 'black' }}>
+                    <img
+                      src={background2}
+                      alt="background"
+                      style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        zIndex: -1,
+                      }}
+                    />
+                    <IonText style={{ color: 'White' }}>
                       <h1>{post.post_content}</h1>
                     </IonText>
 
@@ -412,9 +499,10 @@ const FeedContainer = () => {
               <IonIcon
                 icon={happyOutline}
                 style={{
+                  ...glow,
                   fontSize: '32px',
                   cursor: 'pointer',
-                  color: '#3880ff'
+                  color: 'white'
                 }}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -425,9 +513,10 @@ const FeedContainer = () => {
               <IonIcon
                 icon={camera}
                 style={{
+                  ...glow,
                   fontSize: '32px',
                   cursor: 'pointer',
-                  color: '#3880ff'
+                  color: 'white'
                 }}
                 onClick={() => editFileInputRef.current?.click()}
               />
@@ -503,8 +592,8 @@ const FeedContainer = () => {
           </IonContent>
 
           <IonFooter className="ion-padding">
-            <IonButton onClick={savePost}>Save</IonButton>
-            <IonButton onClick={() => setIsModalOpen(false)}>Cancel</IonButton>
+            <IonButton onClick={savePost} color="secondary">Save</IonButton>
+            <IonButton onClick={() => setIsModalOpen(false)} color="secondary">Cancel</IonButton>
           </IonFooter>
         </IonModal>
 
