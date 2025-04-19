@@ -16,6 +16,8 @@ interface Post {
 }
 
 const FeedContainer = () => {
+  const createFileInputRef = useRef<HTMLInputElement>(null);
+  const editFileInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [postImageFile, setPostImageFile] = useState<File | null>(null);
@@ -163,68 +165,68 @@ const FeedContainer = () => {
 
   const savePost = async () => {
     if (!postContent || !editingPost) return;
-  
+
     let newImageUrl = editingPost.post_image_url;  // Default to current image URL
-  
+
     // Step 1: Upload the new image if one was selected
     if (editPostImageFile) {
       // Get file extension and construct the file path for the new image
       const fileExt = editPostImageFile.name.split('.').pop();
       const fileName = `${editingPost.user_id}/${editingPost.post_id}.${fileExt}`;  // User and post-specific filename
       const filePath = `post-images/${fileName}`;  // Path under 'post-images' folder
-  
+
       console.log("Uploading image to path:", filePath);  // Debugging upload path
-  
+
       // Upload the image to Supabase
       const { data: uploadData, error: uploadImageError } = await supabase.storage
         .from('post-images')
         .upload(filePath, editPostImageFile, { upsert: true });  // Ensure it replaces the old image if it exists
-  
+
       if (uploadImageError) {
         console.error('Image upload failed:', uploadImageError.message);
         return;
       }
-  
+
       // Step 2: Get the public URL of the newly uploaded image
       const { data: urlData } = supabase.storage
         .from('post-images')
         .getPublicUrl(filePath);
-  
+
       console.log("New image URL:", urlData.publicUrl);
-  
+
       newImageUrl = urlData.publicUrl;  // Update the new image URL to be stored in the post
     }
-  
+
     // Rest of your function remains the same...
     // Step 3: Delete the old image (if any)
     if (editingPost.post_image_url) {
       const url = new URL(editingPost.post_image_url);  // Parse the URL of the old image
       const filePathInBucket = url.pathname.split('/post-images/')[1];  // Get the path inside the 'post-images' folder
-  
+
       console.log("Deleting old image from path:", filePathInBucket);  // Debugging the path to delete
-  
+
       // Delete the old image from Supabase storage
       const { error: deleteImageError } = await supabase.storage.from('post-images').remove([filePathInBucket]);
-  
+
       if (deleteImageError) {
         console.error('Image deletion failed:', deleteImageError.message);
       }
     }
-  
+
     // Step 4: Update the post in the database with the new content and image URL
     const { data, error: dbError } = await supabase
       .from('posts')
-      .update({ 
-        post_content: postContent, 
+      .update({
+        post_content: postContent,
         post_image_url: newImageUrl,
         post_updated_at: new Date().toISOString()
       })
       .match({ post_id: editingPost.post_id })
       .select('*');
-  
+
     if (!dbError && data) {
       const updatedPost = data[0] as Post;
-      setPosts(posts.map(post => 
+      setPosts(posts.map(post =>
         post.post_id === updatedPost.post_id ? updatedPost : post
       ));
       setPostContent('');
@@ -237,7 +239,7 @@ const FeedContainer = () => {
       console.error('Post update failed:', dbError?.message);
     }
   };
-  
+
   return (
     <IonApp>
       <IonPage>
@@ -266,7 +268,7 @@ const FeedContainer = () => {
                       type="file"
                       accept="image/*"
                       style={{ display: 'none' }}
-                      ref={fileInputRef} // Attach the ref to the input
+                      ref={createFileInputRef}
                       onChange={(e) => {
                         const file = e.target.files?.[0];
                         setPostImageFile(file ?? null);
@@ -278,18 +280,14 @@ const FeedContainer = () => {
                       }}
                     />
 
-                    {/* Icon that triggers the file input */}
                     <IonIcon
-                      icon={camera} // The camera icon
-                      style={{
-                        fontSize: '32px',
-                        cursor: 'pointer',
-                      }}
+                      icon={camera}
+                      style={{ fontSize: '32px', cursor: 'pointer' }}
                       onClick={() => {
-                        // Trigger the file input click when the icon is clicked
-                        fileInputRef.current?.click();
+                        createFileInputRef.current?.click();
                       }}
                     />
+
 
                     {/* Image preview */}
                     {imagePreview && (
@@ -399,11 +397,10 @@ const FeedContainer = () => {
                 />
               </div>
             )}
-
             <input
               type="file"
               accept="image/*"
-              ref={fileInputRef}
+              ref={editFileInputRef}
               style={{ display: 'none' }}
               onChange={(e) => {
                 const file = e.target.files?.[0];
@@ -414,13 +411,12 @@ const FeedContainer = () => {
               }}
             />
 
-            <div style={{ marginTop: '1rem' }}>
-              <IonIcon
-                icon={camera}
-                style={{ fontSize: '32px', cursor: 'pointer' }}
-                onClick={() => fileInputRef.current?.click()}
-              />
-            </div>
+            <IonIcon
+              icon={camera}
+              style={{ fontSize: '32px', cursor: 'pointer' }}
+              onClick={() => editFileInputRef.current?.click()}
+            />
+
           </IonContent>
 
           <IonFooter className="ion-padding">
