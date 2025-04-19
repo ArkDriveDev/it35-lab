@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { IonApp, IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonButton, IonInput, IonLabel, IonModal, IonFooter, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle, IonAlert, IonText, IonAvatar, IonCol, IonGrid, IonRow, IonIcon, IonPopover } from '@ionic/react';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '../utils/supaBaseClient';
-import { pencil, camera } from 'ionicons/icons';
+import { pencil, camera, happyOutline } from 'ionicons/icons';
 import Picker from '@emoji-mart/react';
 import data from '@emoji-mart/data';
 
@@ -34,11 +34,6 @@ const FeedContainer = () => {
   const [popoverState, setPopoverState] = useState<{ open: boolean; event: Event | null; postId: string | null }>({ open: false, event: null, postId: null });
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
-  const addEmoji = (emoji: any) => {
-    setPostContent((prev) => prev + emoji.native);
-  };
-
-
   useEffect(() => {
     const fetchUser = async () => {
       const { data: authData } = await supabase.auth.getUser();
@@ -63,6 +58,23 @@ const FeedContainer = () => {
     fetchPosts();
   }, []);
 
+  // Add this useEffect to handle clicks outside the emoji picker
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showEmojiPicker && !event.composedPath().some((el: any) => el.classList?.contains('emoji-mart'))) {
+        setShowEmojiPicker(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showEmojiPicker]);
+
+  // Modify your addEmoji function to close the picker
+  const addEmoji = (emoji: any) => {
+    setPostContent((prev) => prev + emoji.native);
+    setShowEmojiPicker(false); // Close picker after selection
+  };
   const createPost = async () => {
     if (!postContent || !user || !username) return;
 
@@ -281,7 +293,7 @@ const FeedContainer = () => {
 
                       {/* Emoji Icon */}
                       <IonIcon
-                        icon="😊"
+                        icon={happyOutline}
                         style={{ fontSize: '28px', cursor: 'pointer' }}
                         onClick={() => setShowEmojiPicker(!showEmojiPicker)}
                       />
