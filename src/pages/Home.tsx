@@ -19,6 +19,24 @@ import Feed from './home.tabs/Feed';
 import Search from './home.tabs/Search';
   
   const Home: React.FC = () => {
+
+    const glow = {
+      animation: 'blink 2s infinite',
+      filter: 'drop-shadow(0 0 8px white)',
+    };
+  
+    const h1Style = {
+      ...glow,
+      animationDelay: '0.1s',
+      color: 'skyblue',
+    };
+
+    const h2Style = {
+      display: 'flex',
+      color: 'skyblue',
+      margin: '3%'
+    };
+
     const [showTabBar, setShowTabBar] = useState(true);
     const [showTooltip, setShowTooltip] = useState(false);
     const buttonRef = useRef<HTMLIonButtonElement | null>(null);
@@ -88,8 +106,8 @@ import Search from './home.tabs/Search';
         <IonTabBar slot="bottom">
           {tabs.map((item, index) => (
             <IonTabButton key={index} tab={item.tab} href={item.url}>
-              <IonIcon icon={item.icon} />
-              <IonLabel>{item.name}</IonLabel>
+              <IonIcon style={h1Style} icon={item.icon} />
+              <IonLabel style={h2Style}>{item.name}</IonLabel>
             </IonTabButton>
           ))}
         </IonTabBar>

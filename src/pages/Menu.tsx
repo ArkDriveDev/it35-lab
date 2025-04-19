@@ -44,6 +44,11 @@ const Menu: React.FC = () => {
     margin: '3%'
   };
 
+  const h3Style = {
+    display: 'flex',
+    color: 'skyblue',
+  };
+
   return (
     <>
       <IonMenu contentId="main-content">
@@ -91,9 +96,9 @@ const Menu: React.FC = () => {
         <IonHeader>
           <IonToolbar>
             <IonButtons slot="start">
-              <IonMenuButton></IonMenuButton>
+              <IonMenuButton  style={h1Style}></IonMenuButton>
             </IonButtons>
-            <IonTitle style={h1Style}>Menu</IonTitle>
+            <IonTitle style={h3Style}>Menu</IonTitle>
           </IonToolbar>
         </IonHeader>
         <IonContent className="ion-padding">
