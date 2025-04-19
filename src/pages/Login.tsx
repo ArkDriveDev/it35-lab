@@ -1,22 +1,22 @@
-import { 
-  IonButton, 
-  IonContent, 
-  IonHeader, 
-  IonPage, 
-  IonTitle, 
-  IonToolbar, 
+import {
+  IonButton,
+  IonContent,
+  IonHeader,
+  IonPage,
+  IonTitle,
+  IonToolbar,
   useIonRouter,
   IonInput,
   IonInputPasswordToggle,
   IonAlert,
   IonToast,
-  IonCard, 
-  IonCardContent, 
+  IonCard,
+  IonCardContent,
 } from '@ionic/react';
 import { useState, useEffect } from 'react';
 import { supabase } from '../utils/supaBaseClient';
 import backgroundImg from '../images/Intro-HELLO-FUTURE-1920x1080_v2.gif';
-import Logo from '../images/wp-1661677480129.gif';
+import Logo from '../images/tq63.gif';
 import BGM from '../bgm/Warframe 1999 OST_ Cut Through.mp3';
 
 const AlertBox: React.FC<{ message: string; isOpen: boolean; onClose: () => void }> = ({ message, isOpen, onClose }) => {
@@ -38,7 +38,7 @@ const Login: React.FC = () => {
   const [alertMessage, setAlertMessage] = useState('');
   const [showAlert, setShowAlert] = useState(false);
   const [showToast, setShowToast] = useState(false);
-  
+
   const h1Style = {
     display: 'flex',
     alignItems: 'center',
@@ -100,7 +100,7 @@ const Login: React.FC = () => {
       return;
     }
 
-    setShowToast(true); 
+    setShowToast(true);
     setTimeout(() => {
       navigation.push('/it35-lab/app', 'forward', 'replace');
     }, 300);
@@ -138,17 +138,20 @@ const Login: React.FC = () => {
         >
           <IonCard
             style={{
-              background: 'black',
-              marginTop: '10%',
-              width: '500px',
-              height: '600px',
-              backdropFilter: 'blur(10px)',
+              background: 'transparent',
+              marginTop: '13%',
+              width: '90vw',           
+              maxWidth: '500px',    
+              height: 'auto',          
+              padding: '1rem',
+              backdropFilter: 'blur(2px)',
               border: '2px solid #2B99E2',
               boxShadow: '0 0 15px #2B99E2, 0 0 15px #2B99E2, 0 0 15px #2B99E2',
               borderRadius: '10px',
               animation: 'borderBlink 2s infinite, fadeIn 1.5s ease-in forwards',
             }}
           >
+
             <IonCardContent>
               <div
                 style={{
@@ -156,21 +159,24 @@ const Login: React.FC = () => {
                   flexDirection: 'column',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  marginTop: '40%',
+                  gap: '1rem', // adds spacing between inputs
+                  marginTop: '2rem',
                 }}
               >
+
                 <img
                   src={Logo}
-                  alt="background"
+                  alt="Logo"
                   style={{
-                    position: 'absolute',
-                    top: '25%',
-                    left: '50%',
-                    width: '20%',
-                    height: '20%',
-                    transform: 'translate(-50%, -50%)',
+                    width: '100px',
+                    height: '100px',
+                    objectFit: 'contain',
+                    margin: '0 auto',
+                    display: 'block',
+                    marginBottom: '1rem',
                   }}
                 />
+
                 <h1 style={h1Style}>USER LOGIN</h1>
                 <IonInput
                   label="Email"
