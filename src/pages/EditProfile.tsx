@@ -9,10 +9,10 @@ import {
 import { supabase } from '../utils/supaBaseClient';
 import { useHistory } from 'react-router-dom';
 import { generateTOTP, verifyTOTP } from '../utils/totpUtils';
-import { QRCode } from 'react-qrcode-logo'; 
+import QRCode from 'qrcode.react';
+
 
 const history = useHistory();
-
 interface TOTPState {
   secret: string;
   qrCodeUrl: string;
@@ -215,17 +215,20 @@ const generateBackupCodes = () => {
               </IonToolbar>
             </IonHeader>
             <IonContent className="ion-padding">
+            <h2>QR Test</h2>
+            <QRCode value="https://example.com" />
               <p>Scan this QR code with your authenticator app:</p>
               {totpSetup.qrCodeUrl && (
                 <div style={{ textAlign: 'center', margin: '20px 0' }}>
                   <QRCode
-                    value={totpSetup.qrCodeUrl || ''}  // Provide fallback empty string
+                    value={totpSetup.qrCodeUrl || ''}
                     size={200}
-                    level="H"  // Error correction level
+                    level="H"
                     fgColor="#000000"
                     bgColor="#ffffff"
                     includeMargin={true}
                   />
+
                 </div>
               )}
               <p>Or enter this secret manually: {totpSetup.secret}</p>
