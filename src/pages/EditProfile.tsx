@@ -9,7 +9,9 @@ import {
 import { supabase } from '../utils/supaBaseClient';
 import { useHistory } from 'react-router-dom';
 import { generateTOTP, verifyTOTP } from '../utils/totpUtils';
-import QRCode from 'qrcode.react';  // Correct import
+import { QRCode } from 'react-qrcode-logo'; 
+
+const history = useHistory();
 
 interface TOTPState {
   secret: string;
