@@ -9,7 +9,7 @@ import {
 import { supabase } from '../utils/supaBaseClient';
 import { useHistory } from 'react-router-dom';
 import { generateTOTP, verifyTOTP } from '../utils/totpUtils';
-import QRCode from 'qrcode.react';
+import QRCode from 'qrcode.react';  // Correct import
 
 interface TOTPState {
   secret: string;
@@ -67,8 +67,8 @@ const [alert, setAlert] = useState({
 
 // 2. Create a reusable alert function
 const showAlert = (
-  header: string, 
-  message: string, 
+  header: string,
+  message: string,
   isError = false,
   redirectTo = ''
 ) => {
@@ -121,10 +121,10 @@ const verifyTOTPSetup = async () => {
 
   try {
     const isValid = await verifyTOTP(totpSetup.secret, totpSetup.verificationCode);
-    
+
     if (isValid) {
       const backupCodes = generateBackupCodes();
-      
+
       const { error: dbError } = await supabase.from('user_totp').upsert({
         user_id: user.id,
         secret: totpSetup.secret,
@@ -140,7 +140,7 @@ const verifyTOTPSetup = async () => {
         isSettingUp: false,
         backupCodes,
       });
-      
+
       showAlert('2FA Enabled', 'Two-factor authentication is now active!');
     } else {
       showAlert('Invalid Code', 'The verification code is incorrect', true);
@@ -174,7 +174,7 @@ const disableTOTP = async () => {
       isActive: false,
       backupCodes: [],
     });
-    
+
     showAlert('2FA Disabled', 'Two-factor authentication has been turned off');
   } catch (err) {
     showAlert('Disable Failed', 'Could not disable 2FA', true);
@@ -216,12 +216,13 @@ const generateBackupCodes = () => {
               <p>Scan this QR code with your authenticator app:</p>
               {totpSetup.qrCodeUrl && (
                 <div style={{ textAlign: 'center', margin: '20px 0' }}>
-                  {/* Fixed QRCode import and usage */}
-                  <QRCode 
-                    value={totpSetup.qrCodeUrl} 
+                  <QRCode
+                    value={totpSetup.qrCodeUrl || ''}  // Provide fallback empty string
                     size={200}
-                    fgColor="#000000"  // Explicit color
-                    bgColor="#ffffff"   // Explicit background
+                    level="H"  // Error correction level
+                    fgColor="#000000"
+                    bgColor="#ffffff"
+                    includeMargin={true}
                   />
                 </div>
               )}
@@ -292,7 +293,7 @@ const generateBackupCodes = () => {
   <IonAlert
     isOpen={alert.isOpen}
     onDidDismiss={() => {
-      setAlert({...alert, isOpen: false});
+      setAlert({ ...alert, isOpen: false });
       if (alert.redirectAfterClose) {
         history.push(alert.redirectAfterClose);  // Fixed history.push usage
       }
