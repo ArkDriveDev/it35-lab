@@ -1,322 +1,304 @@
-import React, { useState, useRef, useEffect } from 'react';
+// Add these new imports at the top
+import React, { useState, useEffect, useRef } from 'react';
 import {
   IonContent, IonPage, IonInput, IonButton, IonAlert, IonHeader,
   IonBackButton, IonButtons, IonItem, IonText, IonCol, IonGrid,
-  IonRow, IonInputPasswordToggle, IonImg, IonAvatar,
+  IonRow, IonInputPasswordToggle, IonImg, IonAvatar, IonToast,
+  IonModal, IonToolbar, IonTitle, IonFooter
 } from '@ionic/react';
 import { supabase } from '../utils/supaBaseClient';
 import { useHistory } from 'react-router-dom';
+import { generateTOTP, verifyTOTP } from '../utils/totpUtils';
+import QRCode from 'qrcode.react';
 
-const EditProfile: React.FC = () => {
-    const [email, setEmail] = useState('');
-    const [currentPassword, setCurrentPassword] = useState('');
-    const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
-    const [firstName, setFirstName] = useState('');
-    const [lastName, setLastName] = useState('');
-    const [username, setUsername] = useState('');
-    const [avatarFile, setAvatarFile] = useState<File | null>(null);
-    const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
-    const [showAlert, setShowAlert] = useState(false);
-    const [alertMessage, setAlertMessage] = useState('');
-    const history = useHistory();
-    const fileInputRef = useRef<HTMLInputElement>(null);
-  
-    useEffect(() => {
-        const fetchSessionAndData = async () => {
-          // Fetch the current session
-          const { data: session, error: sessionError } = await supabase.auth.getSession();
-      
-          if (sessionError || !session || !session.session) {
-            setAlertMessage('You must be logged in to access this page.');
-            setShowAlert(true);
-            history.push('/it35-lab/login'); // Redirect to login if no session is found
-            return;
-          }
-      
-          // Fetch user details from Supabase using the session's email
-          const { data: user, error: userError } = await supabase
-            .from('users')
-            .select('user_firstname, user_lastname, user_avatar_url, user_email, username')
-            .eq('user_email', session.session.user.email) // Use email from the session
-            .single();
-      
-          if (userError || !user) {
-            setAlertMessage('User data not found.');
-            setShowAlert(true);
-            return;
-          }
-      
-          // Populate form fields with the retrieved data
-          setFirstName(user.user_firstname || '');
-          setLastName(user.user_lastname || '');
-          setAvatarPreview(user.user_avatar_url);
-          setEmail(user.user_email);
-          setUsername(user.username || '');
-        };
-      
-        fetchSessionAndData();
-      }, [history]);
-  
-    const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-      const file = event.target.files?.[0];
-      if (file) {
-        setAvatarFile(file);
-        setAvatarPreview(URL.createObjectURL(file));
-      }
-    };
-  
-    const handleUpdate = async () => {
-        if (password !== confirmPassword) {
-          setAlertMessage("Passwords don't match.");
-          setShowAlert(true);
-          return;
-        }
-      
-        // Fetch the current session
-        const { data: session, error: sessionError } = await supabase.auth.getSession();
-      
-        if (sessionError || !session || !session.session) {
-          setAlertMessage('Error fetching session or no session available.');
-          setShowAlert(true);
-          return;
-        }
-      
-        const user = session.session.user;
-      
-        if (!user.email) {
-            setAlertMessage('Error: User email is missing.');
-            setShowAlert(true);
-            return;
-          }
-          
-          const { error: passwordError } = await supabase.auth.signInWithPassword({
-            email: user.email,
-            password: currentPassword,
-          });
-          
-      
-        if (passwordError) {
-          setAlertMessage('Incorrect current password.');
-          setShowAlert(true);
-          return;
-        }
-      
-        let avatarUrl = avatarPreview;
-      
-        if (avatarFile) {
-            const fileExt = avatarFile.name.split('.').pop();
-            const fileName = `${Date.now()}.${fileExt}`;
-            const filePath = `avatars/${fileName}`;
-          
-            const { data: uploadData, error: uploadError } = await supabase.storage
-              .from('user-avatars')
-              .upload(filePath, avatarFile, {
-                cacheControl: '3600',
-                upsert: true,
-              });
-          
-            if (uploadError) {
-              setAlertMessage(`Avatar upload failed: ${uploadError.message}`);
-              setShowAlert(true);
-              return;
-            }
-          
-            const { data } = supabase.storage.from('user-avatars').getPublicUrl(filePath);
-            avatarUrl = data.publicUrl;
-          }
-          
-      
-        const { error: updateError } = await supabase
-          .from('users')
-          .update({
-            user_firstname: firstName,
-            user_lastname: lastName,
-            user_avatar_url: avatarUrl,
-            username: username,
-          })
-          .eq('user_email', user.email);
-      
-        if (updateError) {
-          setAlertMessage(updateError.message);
-          setShowAlert(true);
-          return;
-        }
-      
-        if (password) {
-          const { error: passwordUpdateError } = await supabase.auth.updateUser({
-            password: password,
-          });
-      
-          if (passwordUpdateError) {
-            setAlertMessage(passwordUpdateError.message);
-            setShowAlert(true);
-            return;
-          }
-        }
-      
-        setAlertMessage('Account updated successfully!');
-        setShowAlert(true);
-        history.push('/it35-lab/app');
-      };
-      
-  
-    return (
-      <IonPage>
-        <IonHeader>
-          <IonButtons slot="start">
-            <IonBackButton defaultHref="/it35-lab/app" />
-          </IonButtons>
-        </IonHeader>
-        <IonContent className="ion-padding">
-          <IonItem>
-            <IonText color="secondary">
-              <h1>Edit Account</h1>
-            </IonText>
-          </IonItem>
-          <br />
-  
-          {/* Avatar Upload Section */}
-          <IonGrid>
-            <IonRow className="ion-justify-content-center ion-align-items-center">
-              <IonCol className="ion-text-center">
-                {avatarPreview && (
-                  <IonAvatar style={{ width: '200px', height: '200px', margin: '10px auto' }}>
-                    <IonImg src={avatarPreview} style={{ objectFit: 'cover' }} />
-                  </IonAvatar>
-                )}
-  
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  style={{ display: 'none' }}
-                  accept="image/*"
-                  onChange={handleAvatarChange}
-                />
-  
-                <IonButton expand="block" onClick={() => fileInputRef.current?.click()}>
-                  Upload Avatar
-                </IonButton>
-              </IonCol>
-            </IonRow>
-          </IonGrid>
-  
-          {/* Rest of the Form */}
-          <IonGrid>
-            <IonRow>
-              <IonCol>
-                <IonInput
-                  label="Username"
-                  type="text"
-                  labelPlacement="floating"
-                  fill="outline"
-                  placeholder="Enter username"
-                  value={username}
-                  onIonChange={(e) => setUsername(e.detail.value!)}
-                />
-              </IonCol>
-            </IonRow>
-            <IonRow>
-              <IonCol size="6">
-                <IonInput
-                  label="First Name"
-                  type="text"
-                  labelPlacement="floating"
-                  fill="outline"
-                  placeholder="Enter First Name"
-                  value={firstName}
-                  onIonChange={(e) => setFirstName(e.detail.value!)}
-                />
-              </IonCol>
-              <IonCol size="6">
-                <IonInput
-                  label="Last Name"
-                  type="text"
-                  labelPlacement="floating"
-                  fill="outline"
-                  placeholder="Enter Last Name"
-                  value={lastName}
-                  onIonChange={(e) => setLastName(e.detail.value!)}
-                />
-              </IonCol>
-            </IonRow>
-          </IonGrid>         
-          <IonGrid>
-            <IonRow>
-            <IonText color="secondary">
-            <h3>Change Password</h3>
-            </IonText>
-              <IonCol size="12">
-                <IonInput
-                  label="New Password"
-                  type="password"
-                  labelPlacement="floating"
-                  fill="outline"
-                  placeholder="Enter New Password"
-                  value={password}
-                  onIonChange={(e) => setPassword(e.detail.value!)}
-                >
-                  <IonInputPasswordToggle slot="end" />
-                </IonInput>
-              </IonCol>
-            </IonRow>
-          </IonGrid>
-  
-          <IonGrid>
-            <IonRow>
-              <IonCol size="12">
-                <IonInput
-                  label="Confirm Password"
-                  type="password"
-                  labelPlacement="floating"
-                  fill="outline"
-                  placeholder="Confirm New Password"
-                  value={confirmPassword}
-                  onIonChange={(e) => setConfirmPassword(e.detail.value!)}
-                >
-                  <IonInputPasswordToggle slot="end" />
-                </IonInput>
-              </IonCol>
-            </IonRow>
-          </IonGrid>
+interface TOTPState {
+  secret: string;
+  qrCodeUrl: string;
+  verificationCode: string;
+  isSettingUp: boolean;
+  isActive: boolean;
+  backupCodes: string[];
+}
 
+const [totpSetup, setTotpSetup] = useState<TOTPState>({
+  secret: '',
+  qrCodeUrl: '',
+  verificationCode: '',
+  isSettingUp: false,
+  isActive: false,
+  backupCodes: [],
+});
 
-          {/* Current Password Field */}
-          <IonGrid>
-            <IonRow>
-              <IonText color="secondary">
-              <h3>Confirm Changes</h3>
-              </IonText>
-              <IonCol size="12">
-                <IonInput
-                  label="Current Password"
-                  type="password"
-                  labelPlacement="floating"
-                  fill="outline"
-                  placeholder="Enter Current Password to Save Changess"
-                  value={currentPassword}
-                  onIonChange={(e) => setCurrentPassword(e.detail.value!)}
-                >
-                <IonInputPasswordToggle slot="end" />
-                </IonInput>
-              </IonCol>
-            </IonRow>
-          </IonGrid>
-  
-          <IonButton expand="full" onClick={handleUpdate} shape="round">
-            Update Account
-          </IonButton>
-  
-          {/* Alert for success or errors */}
-          <IonAlert
-            isOpen={showAlert}
-            onDidDismiss={() => setShowAlert(false)}
-            message={alertMessage}
-            buttons={['OK']}
-          />
-        </IonContent>
-      </IonPage>
-    );
+// Add this useEffect to check TOTP status when component loads
+useEffect(() => {
+  const checkTOTPStatus = async () => {
+    const { data: session, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError || !session?.session) return;
+
+    const { data: totpData, error } = await supabase
+      .from('user_totp')
+      .select('is_active, backup_codes')
+      .eq('user_id', session.session.user.id)
+      .single();
+
+    if (!error && totpData) {
+      setTotpSetup(prev => ({
+        ...prev,
+        isActive: totpData.is_active,
+        backupCodes: totpData.backup_codes
+          ? totpData.backup_codes.filter((code: any) => !code.used).map((code: any) => code.code)
+          : []
+      }));
+    }
   };
-  
-  export default EditProfile;
+
+  checkTOTPStatus();
+}, []);
+
+// Add these new functions to your component
+// 1. First, define the alert state at the component level
+const [alert, setAlert] = useState({
+  isOpen: false,
+  header: '',
+  message: '',
+  buttons: ['OK'],
+  redirectAfterClose: '' as string | ''
+});
+
+// 2. Create a reusable alert function
+const showAlert = (
+  header: string, 
+  message: string, 
+  isError = false,
+  redirectTo = ''
+) => {
+  setAlert({
+    isOpen: true,
+    header: isError ? 'Error' : header,
+    message,
+    buttons: ['OK'],
+    redirectAfterClose: redirectTo
+  });
+};
+
+// 3. Update all functions to use the new alert system:
+
+// Start TOTP Setup
+const startTOTPSetup = async () => {
+  const { data: { user }, error } = await supabase.auth.getUser();
+
+  if (error || !user?.email) {
+    showAlert('Session Expired', 'Please login again', true, '/login');
+    return;
+  }
+
+  try {
+    const { secret, qrCodeUrl } = await generateTOTP(user.email);
+    setTotpSetup({
+      ...totpSetup,
+      secret,
+      qrCodeUrl,
+      isSettingUp: true,
+      isActive: false,
+    });
+  } catch (err) {
+    showAlert('Setup Failed', 'Could not generate 2FA setup', true);
+  }
+};
+
+// Verify TOTP Setup
+const verifyTOTPSetup = async () => {
+  if (!totpSetup.verificationCode || totpSetup.verificationCode.length !== 6) {
+    showAlert('Invalid Code', 'Please enter a valid 6-digit code', true);
+    return;
+  }
+
+  const { data: { user }, error } = await supabase.auth.getUser();
+  if (error || !user?.id) {
+    showAlert('Session Expired', 'Please login again', true, '/login');
+    return;
+  }
+
+  try {
+    const isValid = await verifyTOTP(totpSetup.secret, totpSetup.verificationCode);
+    
+    if (isValid) {
+      const backupCodes = generateBackupCodes();
+      
+      const { error: dbError } = await supabase.from('user_totp').upsert({
+        user_id: user.id,
+        secret: totpSetup.secret,
+        backup_codes: backupCodes.map(code => ({ code, used: false })),
+        is_active: true,
+      });
+
+      if (dbError) throw dbError;
+
+      setTotpSetup({
+        ...totpSetup,
+        isActive: true,
+        isSettingUp: false,
+        backupCodes,
+      });
+      
+      showAlert('2FA Enabled', 'Two-factor authentication is now active!');
+    } else {
+      showAlert('Invalid Code', 'The verification code is incorrect', true);
+    }
+  } catch (err) {
+    showAlert('Verification Failed', 'Could not enable 2FA', true);
+  }
+};
+
+// Disable TOTP
+const disableTOTP = async () => {
+  const { data: { user }, error } = await supabase.auth.getUser();
+  if (error || !user?.id) {
+    showAlert('Session Expired', 'Please login again', true, '/login');
+    return;
+  }
+
+  try {
+    const { error: deleteError } = await supabase
+      .from('user_totp')
+      .delete()
+      .eq('user_id', user.id);
+
+    if (deleteError) throw deleteError;
+
+    setTotpSetup({
+      secret: '',
+      qrCodeUrl: '',
+      verificationCode: '',
+      isSettingUp: false,
+      isActive: false,
+      backupCodes: [],
+    });
+    
+    showAlert('2FA Disabled', 'Two-factor authentication has been turned off');
+  } catch (err) {
+    showAlert('Disable Failed', 'Could not disable 2FA', true);
+  }
+};
+
+// Helper function for backup codes
+const generateBackupCodes = () => {
+  return Array.from({ length: 8 }, () => {
+    const part1 = Math.random().toString(36).substring(2, 6);
+    const part2 = Math.random().toString(36).substring(2, 6);
+    return `${part1}-${part2}`.toUpperCase();
+  });
+};
+
+// 4. Add the IonAlert component to your JSX
+
+// Add this new section to your JSX (before the Update Account button)
+<IonGrid>
+  <IonRow>
+    <IonCol>
+      <IonText color="secondary">
+        <h3>Two-Factor Authentication</h3>
+      </IonText>
+
+      {!totpSetup.isActive ? (
+        !totpSetup.isSettingUp ? (
+          <IonButton expand="block" onClick={startTOTPSetup}>
+            Enable 2FA
+          </IonButton>
+        ) : (
+          <IonModal isOpen={totpSetup.isSettingUp}>
+            <IonHeader>
+              <IonToolbar>
+                <IonTitle>Setup 2FA</IonTitle>
+              </IonToolbar>
+            </IonHeader>
+            <IonContent className="ion-padding">
+              <p>Scan this QR code with your authenticator app:</p>
+              {totpSetup.qrCodeUrl && (
+                <div style={{ textAlign: 'center', margin: '20px 0' }}>
+                  {/* Fixed QRCode import and usage */}
+                  <QRCode 
+                    value={totpSetup.qrCodeUrl} 
+                    size={200}
+                    fgColor="#000000"  // Explicit color
+                    bgColor="#ffffff"   // Explicit background
+                  />
+                </div>
+              )}
+              <p>Or enter this secret manually: {totpSetup.secret}</p>
+
+              <IonInput
+                label="Verification Code"
+                type="text"
+                labelPlacement="floating"
+                fill="outline"
+                placeholder="Enter 6-digit code"
+                value={totpSetup.verificationCode}
+                onIonChange={(e) => setTotpSetup({ ...totpSetup, verificationCode: e.detail.value! })}
+              />
+            </IonContent>
+            <IonFooter>
+              <IonToolbar>
+                <IonButton expand="block" onClick={verifyTOTPSetup}>
+                  Verify and Enable
+                </IonButton>
+                <IonButton
+                  expand="block"
+                  fill="clear"
+                  onClick={() => setTotpSetup({ ...totpSetup, isSettingUp: false })}
+                >
+                  Cancel
+                </IonButton>
+              </IonToolbar>
+            </IonFooter>
+          </IonModal>
+        )
+      ) : (
+        <>
+          <p>Two-factor authentication is enabled for your account.</p>
+          {totpSetup.backupCodes.length > 0 && (
+            <IonModal isOpen={totpSetup.backupCodes.length > 0}>
+              <IonHeader>
+                <IonToolbar>
+                  <IonTitle>Backup Codes</IonTitle>
+                </IonToolbar>
+              </IonHeader>
+              <IonContent className="ion-padding">
+                <p><strong>Save these codes in a safe place:</strong></p>
+                <ul>
+                  {totpSetup.backupCodes.map((code, i) => (
+                    <li key={i}>{code}</li>
+                  ))}
+                </ul>
+              </IonContent>
+              <IonFooter>
+                <IonToolbar>
+                  <IonButton expand="block" onClick={() => setTotpSetup({ ...totpSetup, backupCodes: [] })}>
+                    I've Saved These
+                  </IonButton>
+                </IonToolbar>
+              </IonFooter>
+            </IonModal>
+          )}
+          <IonButton expand="block" color="danger" onClick={disableTOTP}>
+            Disable 2FA
+          </IonButton>
+        </>
+      )}
+    </IonCol>
+  </IonRow>
+
+  {/* Fixed Alert component - removed duplicate and simplified */}
+  <IonAlert
+    isOpen={alert.isOpen}
+    onDidDismiss={() => {
+      setAlert({...alert, isOpen: false});
+      if (alert.redirectAfterClose) {
+        history.push(alert.redirectAfterClose);  // Fixed history.push usage
+      }
+    }}
+    header={alert.header}
+    message={alert.message}
+    buttons={alert.buttons}
+  />
+</IonGrid>
