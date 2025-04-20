@@ -230,48 +230,77 @@ const FeedContainer = () => {
     setIsModalOpen(true);
   };
 
-  const savePost = async () => {
-    if (!editPostContent || !editingPost) return;
+ const savePost = async () => {
+  if (!editPostContent || !editingPost) return;
 
-    let newImageUrl = editingPost.post_image_url;
+  let newImageUrl = editingPost.post_image_url;
+  let oldImagePath = null;
 
-    // Image upload logic remains the same...
-    if (editPostImageFile) {
-      // ... existing image upload code ...
+  // If there was an existing image, get its path for potential deletion
+  if (editingPost.post_image_url) {
+    const url = new URL(editingPost.post_image_url);
+    oldImagePath = url.pathname.split('/post-images/')[1];
+  }
+
+  // Upload new image if one was selected
+  if (editPostImageFile) {
+    const fileExt = editPostImageFile.name.split('.').pop();
+    const fileName = `${editingPost.user_id}/${editingPost.post_id}.${fileExt}`;
+    const filePath = `post-images/${fileName}`;
+
+    // Upload the new image
+    const { error: uploadError } = await supabase.storage
+      .from('post-images')
+      .upload(filePath, editPostImageFile, { upsert: true });
+
+    if (uploadError) {
+      console.error('Image upload failed:', uploadError.message);
+      return;
     }
 
-    // Delete old image if needed
-    if (editingPost.post_image_url) {
-      // ... existing image deletion code ...
-    }
+    // Get the new image URL
+    const { data: urlData } = supabase.storage
+      .from('post-images')
+      .getPublicUrl(filePath);
+    
+    newImageUrl = urlData.publicUrl;
 
-    // Update post in database - THIS IS THE CRUCIAL FIX:
-    const { data, error: dbError } = await supabase
-      .from('posts')
-      .update({
-        post_content: editPostContent,  // ← Changed from postContent to editPostContent
-        post_image_url: newImageUrl,
-        post_updated_at: new Date().toISOString()
-      })
-      .match({ post_id: editingPost.post_id })
-      .select('*');
-
-    if (!dbError && data) {
-      const updatedPost = data[0] as Post;
-      setPosts(posts.map(post =>
-        post.post_id === updatedPost.post_id ? updatedPost : post
-      ));
-      // Reset all edit-related states
-      setEditPostContent('');
-      setEditingPost(null);
-      setEditPostImageFile(null);
-      setEditImagePreview(null);
-      setIsModalOpen(false);
-      setIsAlertOpen(true);
-    } else {
-      console.error('Post update failed:', dbError?.message);
+    // Delete the old image if it exists and was replaced
+    if (oldImagePath) {
+      const { error: deleteError } = await supabase.storage
+        .from('post-images')
+        .remove([oldImagePath]);
+      
+      if (deleteError) {
+        console.error('Failed to delete old image:', deleteError.message);
+      } else {
+        console.log('Old image deleted successfully');
+      }
     }
-  };
+  }
+
+  // Update the post in database
+  const { data, error: dbError } = await supabase
+    .from('posts')
+    .update({
+      post_content: editPostContent,
+      post_image_url: newImageUrl,
+      post_updated_at: new Date().toISOString()
+    })
+    .match({ post_id: editingPost.post_id })
+    .select('*');
+
+  if (!dbError && data) {
+    const updatedPost = data[0] as Post;
+    setPosts(posts.map(post =>
+      post.post_id === updatedPost.post_id ? updatedPost : post
+    ));
+    setIsModalOpen(false);
+    setIsAlertOpen(true);
+  } else {
+    console.error('Post update failed:', dbError?.message);
+  }
+};
   return (
     <IonApp>
       <IonPage>
@@ -525,8 +554,8 @@ const FeedContainer = () => {
                 <div style={{
                   position: 'absolute',
                   zIndex: 1000,
-                  bottom: '100%',
-                  left: 0,
+                  top: '1%',
+                  left: 20,
                   marginBottom: '10px'
                 }}>
                   <Picker
