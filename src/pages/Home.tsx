@@ -1,19 +1,15 @@
 import { 
-  IonButton,
-    IonButtons,
-      IonContent, 
-      IonHeader, 
       IonIcon, 
       IonLabel, 
-      IonMenuButton, 
-      IonPage, 
       IonRouterOutlet, 
       IonTabBar, 
       IonTabButton, 
       IonTabs, 
-      IonTitle, 
-      IonToolbar 
+      IonButton,
+      IonPopover
   } from '@ionic/react';
+import { useRef, useEffect, useState } from 'react';
+import { chevronDownOutline, chevronUpOutline } from 'ionicons/icons';
 import { IonReactRouter } from '@ionic/react-router';
 import { bookOutline, search, star } from 'ionicons/icons';
 import { Route, Redirect } from 'react-router';
@@ -24,25 +20,98 @@ import Search from './home.tabs/Search';
   
   const Home: React.FC = () => {
 
+    const glow = {
+      animation: 'blink 2s infinite',
+      filter: 'drop-shadow(0 0 8px white)',
+    };
+  
+    const h1Style = {
+      ...glow,
+      animationDelay: '0.1s',
+      color: 'skyblue',
+    };
+
+    const h2Style = {
+      display: 'flex',
+      color: 'skyblue',
+      margin: '3%'
+    };
+
+    const [showTabBar, setShowTabBar] = useState(true);
+    const [showTooltip, setShowTooltip] = useState(false);
+    const buttonRef = useRef<HTMLIonButtonElement | null>(null);
     const tabs = [
       {name:'Feed', tab:'feed',url: '/it35-lab/app/home/feed', icon: bookOutline},
       {name:'Search', tab:'search', url: '/it35-lab/app/home/search', icon: search},
       {name:'Favorites',tab:'favorites', url: '/it35-lab/app/home/favorites', icon: star},
     ]
+
+    const handleButtonClick = () => {
+      setShowTabBar(prev => !prev); // Toggle the tab bar visibility
+      setShowTooltip(false); // Close the popover on button click
+    };
     
     return (
       <IonReactRouter>
         <IonTabs>
-          <IonTabBar slot="bottom">
+        <div>
+      {/* Toggle Button */}
+      <div
+        style={{
+          position: 'fixed',
+          bottom: showTabBar ? '0px' : '0',
+          right: '1rem',
+          zIndex: 1000
+        }}
+        onMouseEnter={() => setShowTooltip(true)} // Show tooltip on hover
+        onMouseLeave={() => setShowTooltip(false)} // Hide tooltip when hover ends
+      >
+        <IonButton
+          ref={buttonRef}
+          fill="clear"
+          onClick={handleButtonClick} // Close popover on button click
+          style={{ fontSize: '15px' }}
+        >
+          <IonIcon icon={showTabBar ? chevronDownOutline : chevronUpOutline} />
+        </IonButton>
+      </div>
 
-            {tabs.map((item, index) => (
-              <IonTabButton key={index} tab={item.tab} href={item.url}>
-                <IonIcon icon={item.icon} />
-                <IonLabel>{item.name}</IonLabel>
-              </IonTabButton>
-            ))}
-            
-          </IonTabBar>
+      {/* Popover */}
+      <IonPopover
+        isOpen={showTooltip}
+        event={undefined}
+        showBackdrop={false}
+        style={{
+          position: 'absolute',
+          top: 'calc(45% + 1px)', 
+          left: '62%',
+          transform: 'translateX(-50%)',
+          '--background': '#333',
+          '--color': '#fff',
+          fontSize: '0.9rem',
+          textAlign: 'center',
+          pointerEvents: 'none', 
+        }}
+      >
+        <div style={{ padding: '0.3rem 0.6rem' }}>
+          {showTabBar ? 'Close Tab Bar' : 'Open Tab Bar'}
+        </div>
+      </IonPopover>
+
+      {/* Your tab bar logic here */}
+    </div>
+
+      {/* Conditional TabBar */}
+      {showTabBar && (
+        <IonTabBar slot="bottom">
+          {tabs.map((item, index) => (
+            <IonTabButton key={index} tab={item.tab} href={item.url}>
+              <IonIcon style={h1Style} icon={item.icon} />
+              <IonLabel style={h2Style}>{item.name}</IonLabel>
+            </IonTabButton>
+          ))}
+        </IonTabBar>
+      )}
         <IonRouterOutlet>
 
           <Route exact path="/it35-lab/app/home/feed" render={Feed} />
