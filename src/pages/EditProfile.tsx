@@ -6,7 +6,6 @@ import {
   IonTitle,
   IonContent,
   IonButton,
-  IonInput,
   IonText,
   IonItem,
   IonLabel,
@@ -16,7 +15,6 @@ import { TOTP } from 'otpauth';
 
 const EditProfile: React.FC = () => {
   const [secret, setSecret] = useState('');
-  const [verificationCode, setVerificationCode] = useState('');
   const [isEnabled, setIsEnabled] = useState(false);
   const [error, setError] = useState('');
   const [userId, setUserId] = useState('');
@@ -64,42 +62,9 @@ const EditProfile: React.FC = () => {
     }
   };
 
-  const verifyCode = async () => {
-    try {
-      const { data, error: fetchError } = await supabase
-        .from('user_totp')
-        .select('secret')
-        .eq('user_id', userId)
-        .single();
-
-      if (fetchError || !data?.secret) throw fetchError || new Error('Secret not found');
-
-      const totp = new TOTP({
-        secret: data.secret,
-        algorithm: 'SHA1',
-        digits: 6,
-        period: 30,
-      });
-
-      const isValid = totp.validate({ token: verificationCode, window: 1 }) !== null;
-
-      if (isValid) {
-        const { error: updateError } = await supabase
-          .from('user_totp')
-          .update({ is_verified: true })
-          .eq('user_id', userId);
-
-        if (updateError) throw updateError;
-
-        setIsEnabled(true);
-        setError('');
-      } else {
-        setError('Invalid verification code');
-      }
-    } catch (err) {
-      console.error(err);
-      setError('Verification failed');
-    }
+  const regenerateSecret = async () => {
+    setSecret('');
+    generateSecret();
   };
 
   return (
@@ -119,7 +84,7 @@ const EditProfile: React.FC = () => {
           <IonButton expand="block" onClick={generateSecret}>
             Generate Secret Key
           </IonButton>
-        ) : !isEnabled ? (
+        ) : (
           <>
             <IonItem>
               <IonLabel>Your secret key:</IonLabel>
@@ -130,22 +95,10 @@ const EditProfile: React.FC = () => {
             <IonText>
               <p>Enter this manually into your Authenticator app.</p>
             </IonText>
-            <IonItem>
-              <IonLabel position="floating">6-digit code</IonLabel>
-              <IonInput
-                value={verificationCode}
-                onIonChange={(e) => setVerificationCode(e.detail.value!)}
-                placeholder="Enter verification code"
-              />
-            </IonItem>
-            <IonButton expand="block" onClick={verifyCode}>
-              Verify Code
+            <IonButton expand="block" onClick={regenerateSecret}>
+              Regenerate Key
             </IonButton>
           </>
-        ) : (
-          <IonText color="success">
-            <p>✅ Two-Factor Authentication is enabled!</p>
-          </IonText>
         )}
 
         {error && (
