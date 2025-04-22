@@ -18,8 +18,9 @@ import { Redirect, Route } from 'react-router';
 import Home from './Home';
 import About from './About';
 import Details from './Details';
-import EditProfile from './EditProfile';
 import backgroundImg from '../images/Tecno.gif';
+import EditProfile from './EditProfile';
+
 const Menu: React.FC = () => {
   const path = [
     { name: 'Home', url: '/it35-lab/app/home', icon: homeOutline },

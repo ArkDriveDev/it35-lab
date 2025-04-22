@@ -1,309 +1,159 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
-  IonContent, IonPage, IonInput, IonButton, IonAlert, IonHeader,
-  IonBackButton, IonButtons, IonItem, IonText, IonCol, IonGrid,
-  IonRow, IonInputPasswordToggle, IonImg, IonAvatar, IonToast,
-  IonModal, IonToolbar, IonTitle, IonFooter
+  IonPage,
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonContent,
+  IonButton,
+  IonInput,
+  IonText,
+  IonItem,
+  IonLabel,
 } from '@ionic/react';
 import { supabase } from '../utils/supaBaseClient';
-import { useHistory } from 'react-router-dom';
-import { generateTOTP, verifyTOTP } from '../utils/totpUtils';
-import QRCode from 'react-qr-code';
+import { TOTP } from 'otpauth';
 
 const EditProfile: React.FC = () => {
-  const history = useHistory();
-
-  interface TOTPState {
-    secret: string;
-    qrCodeUrl: string;
-    verificationCode: string;
-    isSettingUp: boolean;
-    isActive: boolean;
-    backupCodes: string[];
-  }
-
-  const [totpSetup, setTotpSetup] = useState<TOTPState>({
-    secret: '',
-    qrCodeUrl: '',
-    verificationCode: '',
-    isSettingUp: false,
-    isActive: false,
-    backupCodes: [],
-  });
-
-  const [alert, setAlert] = useState({
-    isOpen: false,
-    header: '',
-    message: '',
-    buttons: ['OK'],
-    redirectAfterClose: '' as string | ''
-  });
+  const [secret, setSecret] = useState('');
+  const [verificationCode, setVerificationCode] = useState('');
+  const [isEnabled, setIsEnabled] = useState(false);
+  const [error, setError] = useState('');
+  const [userId, setUserId] = useState('');
 
   useEffect(() => {
-    const checkTOTPStatus = async () => {
-      const { data: session, error: sessionError } = await supabase.auth.getSession();
-      if (sessionError || !session?.session) return;
-
-      const { data: totpData, error } = await supabase
-        .from('user_totp')
-        .select('is_active, backup_codes')
-        .eq('user_id', session.session.user.id)
-        .single();
-
-      if (!error && totpData) {
-        setTotpSetup(prev => ({
-          ...prev,
-          isActive: totpData.is_active,
-          backupCodes: totpData.backup_codes
-            ? totpData.backup_codes.filter((code: any) => !code.used).map((code: any) => code.code)
-            : []
-        }));
-      }
+    const getUser = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      setUserId(user?.id || '');
     };
-
-    checkTOTPStatus();
+    getUser();
   }, []);
 
-  const showAlert = (
-    header: string,
-    message: string,
-    isError = false,
-    redirectTo = ''
-  ) => {
-    setAlert({
-      isOpen: true,
-      header: isError ? 'Error' : header,
-      message,
-      buttons: ['OK'],
-      redirectAfterClose: redirectTo
-    });
-  };
-
-  const startTOTPSetup = async () => {
-    const { data: { user }, error } = await supabase.auth.getUser();
-
-    if (error || !user?.email) {
-      showAlert('Session Expired', 'Please login again', true, '/login');
-      return;
-    }
-
+  const generateSecret = async () => {
     try {
-      const { secret, qrCodeUrl } = await generateTOTP(user.email);
-      setTotpSetup({
-        ...totpSetup,
-        secret,
-        qrCodeUrl,
-        isSettingUp: true,
-        isActive: false,
+      const totp = new TOTP({
+        issuer: 'YourAppName',
+        label: 'YourAppName:' + userId,
+        algorithm: 'SHA1',
+        digits: 6,
+        period: 30,
       });
+
+      const newSecret = totp.secret.base32;
+
+      const { error: insertError } = await supabase
+        .from('user_totp')
+        .upsert(
+          {
+            user_id: userId,
+            secret: newSecret,
+            is_verified: false,
+          },
+          { onConflict: 'user_id' }
+        );
+
+      if (insertError) throw insertError;
+
+      setSecret(newSecret);
+      setError('');
     } catch (err) {
-      showAlert('Setup Failed', 'Could not generate 2FA setup', true);
+      console.error(err);
+      setError('Error generating or saving secret');
     }
   };
 
-  const verifyTOTPSetup = async () => {
-    if (!totpSetup.verificationCode || totpSetup.verificationCode.length !== 6) {
-      showAlert('Invalid Code', 'Please enter a valid 6-digit code', true);
-      return;
-    }
-
-    const { data: { user }, error } = await supabase.auth.getUser();
-    if (error || !user?.id) {
-      showAlert('Session Expired', 'Please login again', true, '/login');
-      return;
-    }
-
+  const verifyCode = async () => {
     try {
-      const isValid = await verifyTOTP(totpSetup.secret, totpSetup.verificationCode);
+      const { data, error: fetchError } = await supabase
+        .from('user_totp')
+        .select('secret')
+        .eq('user_id', userId)
+        .single();
+
+      if (fetchError || !data?.secret) throw fetchError || new Error('Secret not found');
+
+      const totp = new TOTP({
+        secret: data.secret,
+        algorithm: 'SHA1',
+        digits: 6,
+        period: 30,
+      });
+
+      const isValid = totp.validate({ token: verificationCode, window: 1 }) !== null;
 
       if (isValid) {
-        const backupCodes = generateBackupCodes();
+        const { error: updateError } = await supabase
+          .from('user_totp')
+          .update({ is_verified: true })
+          .eq('user_id', userId);
 
-        const { error: dbError } = await supabase.from('user_totp').upsert({
-          user_id: user.id,
-          secret: totpSetup.secret,
-          backup_codes: backupCodes.map(code => ({ code, used: false })),
-          is_active: true,
-        });
+        if (updateError) throw updateError;
 
-        if (dbError) throw dbError;
-
-        setTotpSetup({
-          ...totpSetup,
-          isActive: true,
-          isSettingUp: false,
-          backupCodes,
-        });
-
-        showAlert('2FA Enabled', 'Two-factor authentication is now active!');
+        setIsEnabled(true);
+        setError('');
       } else {
-        showAlert('Invalid Code', 'The verification code is incorrect', true);
+        setError('Invalid verification code');
       }
     } catch (err) {
-      showAlert('Verification Failed', 'Could not enable 2FA', true);
+      console.error(err);
+      setError('Verification failed');
     }
-  };
-
-  const disableTOTP = async () => {
-    const { data: { user }, error } = await supabase.auth.getUser();
-    if (error || !user?.id) {
-      showAlert('Session Expired', 'Please login again', true, '/login');
-      return;
-    }
-
-    try {
-      const { error: deleteError } = await supabase
-        .from('user_totp')
-        .delete()
-        .eq('user_id', user.id);
-
-      if (deleteError) throw deleteError;
-
-      setTotpSetup({
-        secret: '',
-        qrCodeUrl: '',
-        verificationCode: '',
-        isSettingUp: false,
-        isActive: false,
-        backupCodes: [],
-      });
-
-      showAlert('2FA Disabled', 'Two-factor authentication has been turned off');
-    } catch (err) {
-      showAlert('Disable Failed', 'Could not disable 2FA', true);
-    }
-  };
-
-  const generateBackupCodes = () => {
-    return Array.from({ length: 8 }, () => {
-      const part1 = Math.random().toString(36).substring(2, 6);
-      const part2 = Math.random().toString(36).substring(2, 6);
-      return `${part1}-${part2}`.toUpperCase();
-    });
   };
 
   return (
     <IonPage>
       <IonHeader>
         <IonToolbar>
-          <IonButtons slot="start">
-            <IonBackButton />
-          </IonButtons>
-          <IonTitle>Edit Profile</IonTitle>
+          <IonTitle>Edit Profile - 2FA Setup</IonTitle>
         </IonToolbar>
       </IonHeader>
+
       <IonContent className="ion-padding">
-        <IonGrid>
-          <IonRow>
-            <IonCol>
-              <IonText color="secondary">
-                <h3>Two-Factor Authentication</h3>
+        <IonText>
+          <h2>Two-Factor Authentication</h2>
+        </IonText>
+
+        {!secret ? (
+          <IonButton expand="block" onClick={generateSecret}>
+            Generate Secret Key
+          </IonButton>
+        ) : !isEnabled ? (
+          <>
+            <IonItem>
+              <IonLabel>Your secret key:</IonLabel>
+              <IonText color="primary">
+                <strong>{secret}</strong>
               </IonText>
+            </IonItem>
+            <IonText>
+              <p>Enter this manually into your Authenticator app.</p>
+            </IonText>
+            <IonItem>
+              <IonLabel position="floating">6-digit code</IonLabel>
+              <IonInput
+                value={verificationCode}
+                onIonChange={(e) => setVerificationCode(e.detail.value!)}
+                placeholder="Enter verification code"
+              />
+            </IonItem>
+            <IonButton expand="block" onClick={verifyCode}>
+              Verify Code
+            </IonButton>
+          </>
+        ) : (
+          <IonText color="success">
+            <p>✅ Two-Factor Authentication is enabled!</p>
+          </IonText>
+        )}
 
-              {!totpSetup.isActive ? (
-                !totpSetup.isSettingUp ? (
-                  <IonButton expand="block" onClick={startTOTPSetup}>
-                    Enable 2FA
-                  </IonButton>
-                ) : (
-                  <IonModal isOpen={totpSetup.isSettingUp}>
-                    <IonHeader>
-                      <IonToolbar>
-                        <IonTitle>Setup 2FA</IonTitle>
-                      </IonToolbar>
-                    </IonHeader>
-                    <IonContent className="ion-padding">
-                      <p>Scan this QR code with your authenticator app:</p>
-                      {totpSetup.qrCodeUrl && (
-                        <div style={{ textAlign: 'center', margin: '20px 0' }}>
-                          <QRCode
-                            value={totpSetup.qrCodeUrl || ''}
-                            size={200}
-                            fgColor="#000000"
-                            bgColor="#ffffff"
-                          />
-                        </div>
-                      )}
-                      <p>Or enter this secret manually: {totpSetup.secret}</p>
-
-                      <IonInput
-                        label="Verification Code"
-                        type="text"
-                        labelPlacement="floating"
-                        fill="outline"
-                        placeholder="Enter 6-digit code"
-                        value={totpSetup.verificationCode}
-                        onIonChange={(e) =>
-                          setTotpSetup({ ...totpSetup, verificationCode: e.detail.value! })
-                        }
-                      />
-                    </IonContent>
-                    <IonFooter>
-                      <IonToolbar>
-                        <IonButton expand="block" onClick={verifyTOTPSetup}>
-                          Verify and Enable
-                        </IonButton>
-                        <IonButton
-                          expand="block"
-                          fill="clear"
-                          onClick={() => setTotpSetup({ ...totpSetup, isSettingUp: false })}
-                        >
-                          Cancel
-                        </IonButton>
-                      </IonToolbar>
-                    </IonFooter>
-                  </IonModal>
-                )
-              ) : (
-                <>
-                  <p>Two-factor authentication is enabled for your account.</p>
-                  {totpSetup.backupCodes.length > 0 && (
-                    <IonModal isOpen={totpSetup.backupCodes.length > 0}>
-                      <IonHeader>
-                        <IonToolbar>
-                          <IonTitle>Backup Codes</IonTitle>
-                        </IonToolbar>
-                      </IonHeader>
-                      <IonContent className="ion-padding">
-                        <p><strong>Save these codes in a safe place:</strong></p>
-                        <ul>
-                          {totpSetup.backupCodes.map((code, i) => (
-                            <li key={i}>{code}</li>
-                          ))}
-                        </ul>
-                      </IonContent>
-                      <IonFooter>
-                        <IonToolbar>
-                          <IonButton expand="block" onClick={() => setTotpSetup({ ...totpSetup, backupCodes: [] })}>
-                            I've Saved These
-                          </IonButton>
-                        </IonToolbar>
-                      </IonFooter>
-                    </IonModal>
-                  )}
-                  <IonButton expand="block" color="danger" onClick={disableTOTP}>
-                    Disable 2FA
-                  </IonButton>
-                </>
-              )}
-            </IonCol>
-          </IonRow>
-        </IonGrid>
+        {error && (
+          <IonText color="danger">
+            <p>{error}</p>
+          </IonText>
+        )}
       </IonContent>
-
-      {/* Fixed Alert component */}
-      <IonAlert
-        isOpen={alert.isOpen}
-        onDidDismiss={() => {
-          setAlert({ ...alert, isOpen: false });
-          if (alert.redirectAfterClose) {
-            history.push(alert.redirectAfterClose);
-          }
-        }}
-        header={alert.header}
-        message={alert.message}
-        buttons={alert.buttons}
-      />
     </IonPage>
   );
 };
