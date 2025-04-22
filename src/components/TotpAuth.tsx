@@ -30,8 +30,8 @@ const TotpAuth: React.FC = () => {
   const generateSecret = async () => {
     try {
       const totp = new TOTP({
-        issuer: 'YourAppName',
-        label: 'YourAppName:' + userId,
+        issuer: 'it35-lab',
+        label: 'it35-lab:' + userId,
         algorithm: 'SHA1',
         digits: 6,
         period: 30,
