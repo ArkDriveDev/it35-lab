@@ -24,7 +24,6 @@ const TotpAuth: React.FC = () => {
     const [popoverEvent, setPopoverEvent] = useState<MouseEvent | undefined>(undefined);
     const [showToast, setShowToast] = useState(false);
 
-
     useEffect(() => {
         const getUserAndTotp = async () => {
             const {
@@ -107,13 +106,23 @@ const TotpAuth: React.FC = () => {
         }
     };
 
-    const copyToClipboard = async (text: string) => {
+    const handleCopyClick = async (e: React.MouseEvent) => {
         try {
-            await navigator.clipboard.writeText(text);
-            setShowToast(true); // show toast after copying
+            await navigator.clipboard.writeText(secret);
+            setShowToast(true);
+            setTimeout(() => setShowToast(false), 1500);
         } catch (err) {
             console.error('Failed to copy: ', err);
         }
+    };
+
+    const handleMouseEnter = (e: React.MouseEvent) => {
+        setPopoverEvent(e.nativeEvent);
+        setShowPopover(true);
+    };
+
+    const handleMouseLeave = () => {
+        setShowPopover(false);
     };
 
     return (
@@ -135,35 +144,43 @@ const TotpAuth: React.FC = () => {
                                 <strong>{secret}</strong>
                             </IonText>
                         </IonLabel>
+
                         <div
                             slot="end"
-                            style={{ position: 'relative', display: 'flex', alignItems: 'center', cursor: 'pointer' }}
+                            style={{
+                                position: 'relative',
+                                display: 'flex',
+                                alignItems: 'center',
+                                cursor: 'pointer',
+                            }}
+                            onClick={handleCopyClick}
                             onMouseEnter={() => setShowPopover(true)}
                             onMouseLeave={() => setShowPopover(false)}
-                            onClick={() => copyToClipboard(secret)}
                         >
                             <IonIcon icon={clipboardOutline} style={{ fontSize: '24px', marginRight: '6px' }} />
                             <IonText color="primary"><small>Copy</small></IonText>
+
+                            {/* Custom Tooltip */}
                             {showPopover && (
                                 <div
                                     style={{
                                         position: 'absolute',
-                                        top: '-30px',
+                                        bottom: '100%',
                                         right: 0,
-                                        backgroundColor: '#333',
+                                        marginBottom: '6px',
+                                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
                                         color: '#fff',
                                         padding: '4px 8px',
                                         borderRadius: '4px',
                                         fontSize: '12px',
                                         whiteSpace: 'nowrap',
-                                        zIndex: 1000,
+                                        zIndex: 9999,
                                     }}
                                 >
-                                    Copy
+                                    Copy to clipboard
                                 </div>
                             )}
                         </div>
-
                     </IonItem>
 
                     <IonText>
@@ -206,16 +223,6 @@ const TotpAuth: React.FC = () => {
                     },
                 ]}
             />
-
-            <IonPopover
-                isOpen={showPopover}
-                event={popoverEvent}
-                onDidDismiss={() => setShowPopover(false)}
-                side="top"
-                alignment="center"
-            >
-                <IonText className="ion-padding">Copy</IonText>
-            </IonPopover>
 
             <IonToast
                 isOpen={showToast}
