@@ -38,7 +38,10 @@ const Login: React.FC = () => {
   const [alertMessage, setAlertMessage] = useState('');
   const [showAlert, setShowAlert] = useState(false);
   const [showToast, setShowToast] = useState(false);
-
+  const [showTOTPInput, setShowTOTPInput] = useState(false); // To toggle showing TOTP input
+  const [totpSecret, setTOTPSecret] = useState(''); // To store the secret for TOTP verification
+  const [totpCode, setTOTPCode] = useState('');
+  
   const h1Style = {
     display: 'flex',
     alignItems: 'center',
@@ -61,12 +64,12 @@ const Login: React.FC = () => {
       }
 
       @keyframes fadeIn {
-      0% {
-        opacity: 0; /* Start with the card being invisible */
-      }
-      100% {
-          opacity: 1; /* Fade in to fully visible */
-       }
+        0% {
+          opacity: 0; /* Start with the card being invisible */
+        }
+        100% {
+            opacity: 1; /* Fade in to fully visible */
+         }
       }
     `;
     document.head.appendChild(style);
@@ -92,21 +95,53 @@ const Login: React.FC = () => {
   }, [audio]);
 
   const doLogin = async () => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    const user = data?.user;
+  
     if (error) {
       setAlertMessage(error.message);
       setShowAlert(true);
       return;
     }
-
+  
+    // Check if TOTP is verified
+    const { data: totpData, error: totpError } = await supabase
+      .from('user_totp')
+      .select('is_verified, secret')
+      .eq('user_id', user?.id)
+      .single();
+  
+    if (totpError) {
+      setAlertMessage('Error fetching TOTP status.');
+      setShowAlert(true);
+      return;
+    }
+  
+    if (totpData?.is_verified === false) {
+      // If TOTP is not verified, bypass TOTP input and proceed to the next page
+      audio.pause();
+      audio.currentTime = 0;
+      setShowToast(true);
+      setTimeout(() => {
+        navigation.push('/it35-lab/app', 'forward', 'replace');
+      }, 300);
+    } else {
+      // Show the TOTP input if verified is true
+      setTOTPSecret(totpData?.secret || '');
+      setShowTOTPInput(true);
+    }
+  };
+  const handleTOTPVerify = () => {
+    // Verify TOTP code here
+    // If verification is successful:
+    setShowTOTPInput(false);
     audio.pause();
     audio.currentTime = 0;
-
     setShowToast(true);
     setTimeout(() => {
       navigation.push('/it35-lab/app', 'forward', 'replace');
     }, 300);
+    // Handle any error if the TOTP verification fails
   };
 
   return (
@@ -143,19 +178,18 @@ const Login: React.FC = () => {
             style={{
               background: 'transparent',
               marginTop: '13%',
-              width: '90vw',           
-              maxWidth: '500px',    
-              height: 'auto',          
+              width: '90vw',
+              maxWidth: '500px',
+              height: 'auto',
               padding: '1rem',
               backdropFilter: 'blur(2px)',
               border: '2px solid #2B99E2',
               boxShadow: '0 0 15px #2B99E2, 0 0 15px #2B99E2, 0 0 15px #2B99E2',
               borderRadius: '10px',
               animation: 'borderBlink 2s infinite, fadeIn 1.5s ease-in forwards',
-              left:'7%'
+              left: '7%',
             }}
           >
-
             <IonCardContent>
               <div
                 style={{
@@ -163,11 +197,10 @@ const Login: React.FC = () => {
                   flexDirection: 'column',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: '1rem', // adds spacing between inputs
+                  gap: '1rem',
                   marginTop: '2rem',
                 }}
               >
-
                 <img
                   src={Logo}
                   alt="Logo"
@@ -180,7 +213,6 @@ const Login: React.FC = () => {
                     marginBottom: '1rem',
                   }}
                 />
-
                 <h1 style={h1Style}>USER LOGIN</h1>
                 <IonInput
                   label="Email"
@@ -189,7 +221,7 @@ const Login: React.FC = () => {
                   type="email"
                   placeholder="Enter Email"
                   value={email}
-                  onIonChange={e => setEmail(e.detail.value!)}
+                  onIonChange={(e) => setEmail(e.detail.value!)}
                   style={{
                     boxShadow: '0 0 8px rgba(43, 174, 226, 0.8)',
                     border: '1px solid rgba(43, 174, 226, 0.8)',
@@ -202,7 +234,7 @@ const Login: React.FC = () => {
                   type="password"
                   placeholder="Password"
                   value={password}
-                  onIonChange={e => setPassword(e.detail.value!)}
+                  onIonChange={(e) => setPassword(e.detail.value!)}
                   style={{
                     marginTop: '10px',
                     boxShadow: '0 0 8px rgba(43, 174, 226, 0.8)',
@@ -214,6 +246,7 @@ const Login: React.FC = () => {
                   <IonInputPasswordToggle slot="end" color="secondary" />
                 </IonInput>
               </div>
+
               <IonButton onClick={doLogin} expand="full" shape="round" color="secondary">
                 Login
               </IonButton>
@@ -222,8 +255,31 @@ const Login: React.FC = () => {
                 Don't have an account? Register here
               </IonButton>
 
-              <AlertBox message={alertMessage} isOpen={showAlert} onClose={() => setShowAlert(false)} />
+              {showTOTPInput && (
+                <div style={{ animation: 'fadeIn 1.5s ease-in forwards' }}>
+                  <IonInput
+                    label="Enter 6-digit TOTP"
+                    labelPlacement="floating"
+                    fill="outline"
+                    type="text"
+                    placeholder="Enter 6-digit code"
+                    value={totpCode}
+                    onIonChange={(e) => setTOTPCode(e.detail.value!)}
+                    style={{
+                      marginTop: '10px',
+                      boxShadow: '0 0 8px rgba(43, 174, 226, 0.8)',
+                      border: '1px solid rgba(43, 174, 226, 0.8)',
+                      color: 'white',
+                      backdropFilter: 'blur(3px)',
+                    }}
+                  />
+                  <IonButton onClick={handleTOTPVerify} expand="full" shape="round" color="secondary">
+                    Verify TOTP
+                  </IonButton>
+                </div>
+              )}
 
+              <AlertBox message={alertMessage} isOpen={showAlert} onClose={() => setShowAlert(false)} />
               <IonToast
                 isOpen={showToast}
                 onDidDismiss={() => setShowToast(false)}

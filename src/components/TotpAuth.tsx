@@ -45,7 +45,7 @@ const TotpAuth: React.FC = () => {
           {
             user_id: userId,
             secret: newSecret,
-            is_verified: false,
+            is_verified: true,
           },
           { onConflict: 'user_id' }
         );
