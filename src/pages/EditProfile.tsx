@@ -67,6 +67,24 @@ const EditProfile: React.FC = () => {
     generateSecret();
   };
 
+  const disableTOTP = async () => {
+    try {
+      const { error } = await supabase
+        .from('user_totp')
+        .update({ is_verified: false })
+        .eq('user_id', userId);
+
+      if (error) throw error;
+
+      setIsEnabled(false);
+      setSecret('');
+      setError('');
+    } catch (err) {
+      console.error(err);
+      setError('Error disabling 2FA');
+    }
+  };
+
   return (
     <IonPage>
       <IonHeader>
@@ -97,6 +115,9 @@ const EditProfile: React.FC = () => {
             </IonText>
             <IonButton expand="block" onClick={regenerateSecret}>
               Regenerate Key
+            </IonButton>
+            <IonButton expand="block" color="danger" onClick={disableTOTP}>
+              Disable 2FA
             </IonButton>
           </>
         )}
