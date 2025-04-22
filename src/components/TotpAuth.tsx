@@ -18,15 +18,31 @@ const TotpAuth: React.FC = () => {
   const [showAlert, setShowAlert] = useState(false);
 
   useEffect(() => {
-    const getUser = async () => {
+    const getUserAndTotp = async () => {
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      setUserId(user?.id || '');
+      const uid = user?.id || '';
+      setUserId(uid);
+  
+      // Fetch existing TOTP record
+      if (uid) {
+        const { data, error } = await supabase
+          .from('user_totp')
+          .select('secret, is_verified')
+          .eq('user_id', uid)
+          .single();
+  
+        if (!error && data?.is_verified) {
+          setSecret(data.secret);
+          setIsEnabled(true);
+        }
+      }
     };
-    getUser();
+  
+    getUserAndTotp();
   }, []);
-
+  
   const generateSecret = async () => {
     try {
       const totp = new TOTP({
