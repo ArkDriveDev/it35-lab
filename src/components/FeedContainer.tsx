@@ -230,100 +230,228 @@ const FeedContainer = () => {
     setIsModalOpen(true);
   };
 
- const savePost = async () => {
-  if (!editPostContent || !editingPost) return;
+  const savePost = async () => {
+    if (!editPostContent || !editingPost) return;
 
-  let newImageUrl = editingPost.post_image_url;
-  let oldImagePath = null;
+    let newImageUrl = editingPost.post_image_url;
+    let oldImagePath = null;
 
-  // If there was an existing image, get its path for potential deletion
-  if (editingPost.post_image_url) {
-    const url = new URL(editingPost.post_image_url);
-    oldImagePath = url.pathname.split('/post-images/')[1];
-  }
-
-  // Upload new image if one was selected
-  if (editPostImageFile) {
-    const fileExt = editPostImageFile.name.split('.').pop();
-    const fileName = `${editingPost.user_id}/${editingPost.post_id}.${fileExt}`;
-    const filePath = `post-images/${fileName}`;
-
-    // Upload the new image
-    const { error: uploadError } = await supabase.storage
-      .from('post-images')
-      .upload(filePath, editPostImageFile, { upsert: true });
-
-    if (uploadError) {
-      console.error('Image upload failed:', uploadError.message);
-      return;
+    // If there was an existing image, get its path for potential deletion
+    if (editingPost.post_image_url) {
+      const url = new URL(editingPost.post_image_url);
+      oldImagePath = url.pathname.split('/post-images/')[1];
     }
 
-    // Get the new image URL
-    const { data: urlData } = supabase.storage
-      .from('post-images')
-      .getPublicUrl(filePath);
-    
-    newImageUrl = urlData.publicUrl;
+    // Upload new image if one was selected
+    if (editPostImageFile) {
+      const fileExt = editPostImageFile.name.split('.').pop();
+      const fileName = `${editingPost.user_id}/${editingPost.post_id}.${fileExt}`;
+      const filePath = `post-images/${fileName}`;
 
-    // Delete the old image if it exists and was replaced
-    if (oldImagePath) {
-      const { error: deleteError } = await supabase.storage
+      // Upload the new image
+      const { error: uploadError } = await supabase.storage
         .from('post-images')
-        .remove([oldImagePath]);
-      
-      if (deleteError) {
-        console.error('Failed to delete old image:', deleteError.message);
-      } else {
-        console.log('Old image deleted successfully');
+        .upload(filePath, editPostImageFile, { upsert: true });
+
+      if (uploadError) {
+        console.error('Image upload failed:', uploadError.message);
+        return;
+      }
+
+      // Get the new image URL
+      const { data: urlData } = supabase.storage
+        .from('post-images')
+        .getPublicUrl(filePath);
+
+      newImageUrl = urlData.publicUrl;
+
+      // Delete the old image if it exists and was replaced
+      if (oldImagePath) {
+        const { error: deleteError } = await supabase.storage
+          .from('post-images')
+          .remove([oldImagePath]);
+
+        if (deleteError) {
+          console.error('Failed to delete old image:', deleteError.message);
+        } else {
+          console.log('Old image deleted successfully');
+        }
       }
     }
-  }
 
-  // Update the post in database
-  const { data, error: dbError } = await supabase
-    .from('posts')
-    .update({
-      post_content: editPostContent,
-      post_image_url: newImageUrl,
-      post_updated_at: new Date().toISOString()
-    })
-    .match({ post_id: editingPost.post_id })
-    .select('*');
+    // Update the post in database
+    const { data, error: dbError } = await supabase
+      .from('posts')
+      .update({
+        post_content: editPostContent,
+        post_image_url: newImageUrl,
+        post_updated_at: new Date().toISOString()
+      })
+      .match({ post_id: editingPost.post_id })
+      .select('*');
 
-  if (!dbError && data) {
-    const updatedPost = data[0] as Post;
-    setPosts(posts.map(post =>
-      post.post_id === updatedPost.post_id ? updatedPost : post
-    ));
-    setIsModalOpen(false);
-    setIsAlertOpen(true);
-  } else {
-    console.error('Post update failed:', dbError?.message);
-  }
-};
+    if (!dbError && data) {
+      const updatedPost = data[0] as Post;
+      setPosts(posts.map(post =>
+        post.post_id === updatedPost.post_id ? updatedPost : post
+      ));
+      setIsModalOpen(false);
+      setIsAlertOpen(true);
+    } else {
+      console.error('Post update failed:', dbError?.message);
+    }
+  };
   return (
-    <IonApp>
-      <IonPage>
-        <IonHeader>
-          <IonToolbar>
-            <IonTitle>Posts</IonTitle>
-          </IonToolbar>
-        </IonHeader>
-        <IonContent>
-          {user ? (
-            <>
-              <IonCard style={{
+    <IonPage>
+      <IonHeader>
+        <IonToolbar>
+          <IonTitle style={{
+            ...glow,
+            animationDelay: '0.1s',
+            color: ' #2B99E2',
+            border: ' #2B99E2',
+            boxShadow: '0 0 6px #2B99E2, 0 0 6px #2B99E2, 0 0 6px #2B99E2',
+          }}>Posts</IonTitle>
+        </IonToolbar>
+      </IonHeader>
+      <IonContent>
+        {user ? (
+          <>
+            <IonCard style={{
+              background: 'transparent',
+              border: ' #2B99E2',
+              boxShadow: '0 0 15px #2B99E2, 0 0 15px #2B99E2, 0 0 15px #2B99E2',
+              margin: '4%'
+            }}>
+              <IonCardHeader>
+                <IonCardTitle style={h1Style}>Create Post</IonCardTitle>
+              </IonCardHeader>
+              <IonCardContent>
+                <img
+                  src={background}
+                  alt="background"
+                  style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    zIndex: -1,
+                  }}
+                />
+                <IonInput
+                  value={postContent}
+                  onIonChange={(e) => setPostContent(e.detail.value!)}
+                  placeholder="Write a post..."
+                  style={{
+                    border: '1px solid #ccc', borderRadius: '8px', padding: '10px', marginBottom: '10px',
+                    color: 'skyblue',
+                  }}
+                />
+
+                <div style={{ marginTop: '1rem' }}>
+                  {/* Hidden input field */}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    style={{ display: 'none' }}
+                    ref={createFileInputRef}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      setPostImageFile(file ?? null);
+                      if (file) {
+                        setImagePreview(URL.createObjectURL(file));
+                      } else {
+                        setImagePreview(null);
+                      }
+                    }}
+                  />
+
+                  <IonIcon
+                    icon={camera}
+                    style={{ ...glow, fontSize: '32px', cursor: 'pointer', color: 'white' }}
+                    onClick={() => createFileInputRef.current?.click()}
+                  />
+                  <div style={{ position: 'relative', display: 'inline-block' }}>
+                    <IonIcon
+                      icon={happyOutline}
+                      style={{ ...glow, fontSize: '32px', cursor: 'pointer', marginLeft: '10px', color: 'white' }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowEmojiPicker(!showEmojiPicker);
+                      }}
+                    />
+
+                    {showEmojiPicker && (
+                      <div style={{
+                        position: 'absolute',
+                        zIndex: 200,
+                        bottom: '380%',
+                        left: 0,
+                        marginBottom: '1px',
+                        height: '20%'
+                      }}>
+                        <Picker
+                          data={data}
+                          onEmojiSelect={addEmoji}
+                          onClickOutside={() => setShowEmojiPicker(false)}
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Image preview */}
+                  {imagePreview && (
+                    <div style={{ marginTop: '1rem' }}>
+                      <img
+                        src={imagePreview}
+                        alt="Preview"
+                        style={{ width: '10%', borderRadius: '8px' }}
+                      />
+                    </div>
+                  )}
+                </div>
+              </IonCardContent>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '0.5rem' }}>
+                <IonButton onClick={createPost} color="secondary">Post</IonButton>
+              </div>
+            </IonCard>
+
+            {posts.map(post => (
+              <IonCard key={post.post_id} style={{
                 background: 'transparent',
-                border: ' #2B99E2',
+                border: '2px solid #2B99E2',
                 boxShadow: '0 0 15px #2B99E2, 0 0 15px #2B99E2, 0 0 15px #2B99E2',
-                margin: '4%'
+                animation: 'borderBlink 2s infinite, fadeIn 1.5s ease-in forwards',
               }}>
                 <IonCardHeader>
-                  <IonCardTitle style={h1Style}>Create Post</IonCardTitle>
+                  <IonRow>
+                    <IonCol size="1.85">
+                      <IonAvatar>
+                        <img alt={post.username} src={post.avatar_url} />
+                      </IonAvatar>
+                    </IonCol>
+                    <IonCol>
+                      <IonCardTitle style={{ ...glow, marginTop: '10px' }}>{post.username}</IonCardTitle>
+                      <IonCardSubtitle style={h3Style}>{new Date(post.post_created_at).toLocaleString()}</IonCardSubtitle>
+                    </IonCol>
+                    <IonCol size="auto">
+                      {/* Pencil icon triggers popover */}
+                      <IonButton
+                        fill="clear"
+                        onClick={(e) => setPopoverState({ open: true, event: e.nativeEvent, postId: post.post_id })}
+                      >
+                        <IonIcon color="secondary" icon={pencil} />
+                      </IonButton>
+                    </IonCol>
+                  </IonRow>
                 </IonCardHeader>
+
                 <IonCardContent>
                   <img
-                    src={background}
+                    src={background2}
                     alt="background"
                     style={{
                       position: 'fixed',
@@ -335,306 +463,182 @@ const FeedContainer = () => {
                       zIndex: -1,
                     }}
                   />
-                  <IonInput
-                    value={postContent}
-                    onIonChange={(e) => setPostContent(e.detail.value!)}
-                    placeholder="Write a post..."
-                    style={{
-                      border: '1px solid #ccc', borderRadius: '8px', padding: '10px', marginBottom: '10px',
-                      color: 'skyblue',
-                    }}
-                  />
+                  <IonText style={{ color: 'White' }}>
+                    <h1>{post.post_content}</h1>
+                  </IonText>
 
-                  <div style={{ marginTop: '1rem' }}>
-                    {/* Hidden input field */}
-                    <input
-                      type="file"
-                      accept="image/*"
-                      style={{ display: 'none' }}
-                      ref={createFileInputRef}
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        setPostImageFile(file ?? null);
-                        if (file) {
-                          setImagePreview(URL.createObjectURL(file));
-                        } else {
-                          setImagePreview(null);
-                        }
-                      }}
+                  {post.post_image_url && (
+                    <img
+                      src={post.post_image_url}
+                      alt="Post"
+                      style={{ width: '10%', height: '5%', borderRadius: '10px', marginTop: '10px' }}
                     />
-
-                    <IonIcon
-                      icon={camera}
-                      style={{ ...glow, fontSize: '32px', cursor: 'pointer', color: 'white' }}
-                      onClick={() => createFileInputRef.current?.click()}
-                    />
-                    <div style={{ position: 'relative', display: 'inline-block' }}>
-                      <IonIcon
-                        icon={happyOutline}
-                        style={{ ...glow, fontSize: '32px', cursor: 'pointer', marginLeft: '10px', color: 'white' }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setShowEmojiPicker(!showEmojiPicker);
-                        }}
-                      />
-
-                      {showEmojiPicker && (
-                        <div style={{
-                          position: 'absolute',
-                          zIndex: 200,
-                          bottom: '380%',
-                          left: 0,
-                          marginBottom: '1px',
-                          height: '20%'
-                        }}>
-                          <Picker
-                            data={data}
-                            onEmojiSelect={addEmoji}
-                            onClickOutside={() => setShowEmojiPicker(false)}
-                          />
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Image preview */}
-                    {imagePreview && (
-                      <div style={{ marginTop: '1rem' }}>
-                        <img
-                          src={imagePreview}
-                          alt="Preview"
-                          style={{ width: '10%', borderRadius: '8px' }}
-                        />
-                      </div>
-                    )}
-                  </div>
+                  )}
                 </IonCardContent>
 
-                <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '0.5rem' }}>
-                  <IonButton onClick={createPost} color="secondary">Post</IonButton>
-                </div>
+                {/* Popover with Edit and Delete options */}
+                <IonPopover
+                  isOpen={popoverState.open && popoverState.postId === post.post_id}
+                  event={popoverState.event}
+                  onDidDismiss={() => setPopoverState({ open: false, event: null, postId: null })}
+                >
+                  <IonButton fill="clear" onClick={() => { startEditingPost(post); setPopoverState({ open: false, event: null, postId: null }); }}>
+                    Edit
+                  </IonButton>
+                  <IonButton
+                    fill="clear"
+                    color="danger"
+                    onClick={() => {
+                      const imagePath = getImagePath(post.post_image_url ?? '');
+                      deletePost(post.post_id, imagePath);
+                      setPopoverState({ open: false, event: null, postId: null });
+                    }}>Delete
+                  </IonButton>
+
+                </IonPopover>
               </IonCard>
+            ))}
+          </>
+        ) : (
+          <IonLabel>Loading...</IonLabel>
+        )}
+      </IonContent>
+      <IonModal isOpen={isModalOpen} onDidDismiss={() => {
+        setIsModalOpen(false);
+        setEditPostContent('');
+        setEditImagePreview(null);
+        setEditPostImageFile(null);
+        setShowEditEmojiPicker(false);
+      }}>
+        <IonHeader>
+          <IonToolbar>
+            <IonTitle>Edit Post</IonTitle>
+          </IonToolbar>
+        </IonHeader>
 
-              {posts.map(post => (
-                <IonCard key={post.post_id} style={{
-                  background: 'transparent',
-                  border: '2px solid #2B99E2',
-                  boxShadow: '0 0 15px #2B99E2, 0 0 15px #2B99E2, 0 0 15px #2B99E2',
-                  animation: 'borderBlink 2s infinite, fadeIn 1.5s ease-in forwards',
-                }}>
-                  <IonCardHeader>
-                    <IonRow>
-                      <IonCol size="1.85">
-                        <IonAvatar>
-                          <img alt={post.username} src={post.avatar_url} />
-                        </IonAvatar>
-                      </IonCol>
-                      <IonCol>
-                        <IonCardTitle style={{ ...glow, marginTop: '10px' }}>{post.username}</IonCardTitle>
-                        <IonCardSubtitle style={h3Style}>{new Date(post.post_created_at).toLocaleString()}</IonCardSubtitle>
-                      </IonCol>
-                      <IonCol size="auto">
-                        {/* Pencil icon triggers popover */}
-                        <IonButton
-                          fill="clear"
-                          onClick={(e) => setPopoverState({ open: true, event: e.nativeEvent, postId: post.post_id })}
-                        >
-                          <IonIcon color="secondary" icon={pencil} />
-                        </IonButton>
-                      </IonCol>
-                    </IonRow>
-                  </IonCardHeader>
+        <IonContent className="ion-padding">
+          <IonInput
+            value={editPostContent}
+            onIonChange={(e) => setEditPostContent(e.detail.value!)}
+            placeholder="Edit your post..."
+          />
 
-                  <IonCardContent>
-                    <img
-                      src={background2}
-                      alt="background"
-                      style={{
-                        position: 'fixed',
-                        top: 0,
-                        left: 0,
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'cover',
-                        zIndex: -1,
-                      }}
-                    />
-                    <IonText style={{ color: 'White' }}>
-                      <h1>{post.post_content}</h1>
-                    </IonText>
-
-                    {post.post_image_url && (
-                      <img
-                        src={post.post_image_url}
-                        alt="Post"
-                        style={{ width: '10%', height: '5%', borderRadius: '10px', marginTop: '10px' }}
-                      />
-                    )}
-                  </IonCardContent>
-
-                  {/* Popover with Edit and Delete options */}
-                  <IonPopover
-                    isOpen={popoverState.open && popoverState.postId === post.post_id}
-                    event={popoverState.event}
-                    onDidDismiss={() => setPopoverState({ open: false, event: null, postId: null })}
-                  >
-                    <IonButton fill="clear" onClick={() => { startEditingPost(post); setPopoverState({ open: false, event: null, postId: null }); }}>
-                      Edit
-                    </IonButton>
-                    <IonButton
-                      fill="clear"
-                      color="danger"
-                      onClick={() => {
-                        const imagePath = getImagePath(post.post_image_url ?? '');
-                        deletePost(post.post_id, imagePath);
-                        setPopoverState({ open: false, event: null, postId: null });
-                      }}>Delete
-                    </IonButton>
-
-                  </IonPopover>
-                </IonCard>
-              ))}
-            </>
-          ) : (
-            <IonLabel>Loading...</IonLabel>
-          )}
-        </IonContent>
-        <IonModal isOpen={isModalOpen} onDidDismiss={() => {
-          setIsModalOpen(false);
-          setEditPostContent('');
-          setEditImagePreview(null);
-          setEditPostImageFile(null);
-          setShowEditEmojiPicker(false);
-        }}>
-          <IonHeader>
-            <IonToolbar>
-              <IonTitle>Edit Post</IonTitle>
-            </IonToolbar>
-          </IonHeader>
-
-          <IonContent className="ion-padding">
-            <IonInput
-              value={editPostContent}
-              onIonChange={(e) => setEditPostContent(e.detail.value!)}
-              placeholder="Edit your post..."
-            />
-
-            {/* Emoji picker positioned above the image preview */}
-            <div style={{
-              position: 'relative',
-              marginTop: '10px',
-              display: 'flex',
-              gap: '10px'
-            }}>
-              <IonIcon
-                icon={happyOutline}
-                style={{
-                  ...glow,
-                  fontSize: '32px',
-                  cursor: 'pointer',
-                  color: 'white'
-                }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowEditEmojiPicker(!showEditEmojiPicker);
-                }}
-              />
-
-              <IonIcon
-                icon={camera}
-                style={{
-                  ...glow,
-                  fontSize: '32px',
-                  cursor: 'pointer',
-                  color: 'white'
-                }}
-                onClick={() => editFileInputRef.current?.click()}
-              />
-
-              {showEditEmojiPicker && (
-                <div style={{
-                  position: 'absolute',
-                  zIndex: 1000,
-                  top: '1%',
-                  left: 20,
-                  marginBottom: '10px'
-                }}>
-                  <Picker
-                    data={data}
-                    onEmojiSelect={addEmojiToEdit}
-                    onClickOutside={() => setShowEditEmojiPicker(false)}
-                  />
-                </div>
-              )}
-            </div>
-
-            {(editImagePreview || editingPost?.post_image_url) && (
-              <div style={{
-                position: 'relative',
-                marginTop: '1rem'
-              }}>
-                <img
-                  src={editImagePreview || editingPost?.post_image_url}
-                  alt="Preview"
-                  style={{
-                    width: '100%',
-                    maxWidth: '400px',
-                    borderRadius: '8px',
-                    display: 'block'
-                  }}
-                />
-
-                {/* Camera icon overlay on image */}
-                <div style={{
-                  position: 'absolute',
-                  bottom: '10px',
-                  right: '10px',
-                  backgroundColor: 'rgba(0,0,0,0.5)',
-                  borderRadius: '50%',
-                  padding: '5px'
-                }}>
-                  <IonIcon
-                    icon={camera}
-                    style={{
-                      fontSize: '24px',
-                      cursor: 'pointer',
-                      color: 'white'
-                    }}
-                    onClick={() => editFileInputRef.current?.click()}
-                  />
-                </div>
-              </div>
-            )}
-
-            <input
-              type="file"
-              accept="image/*"
-              ref={editFileInputRef}
-              style={{ display: 'none' }}
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                setEditPostImageFile(file ?? null);
-                if (file) {
-                  setEditImagePreview(URL.createObjectURL(file));
-                }
+          {/* Emoji picker positioned above the image preview */}
+          <div style={{
+            position: 'relative',
+            marginTop: '10px',
+            display: 'flex',
+            gap: '10px'
+          }}>
+            <IonIcon
+              icon={happyOutline}
+              style={{
+                ...glow,
+                fontSize: '32px',
+                cursor: 'pointer',
+                color: 'white'
+              }}
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowEditEmojiPicker(!showEditEmojiPicker);
               }}
             />
-          </IonContent>
 
-          <IonFooter className="ion-padding">
-            <IonButton onClick={savePost} color="secondary">Save</IonButton>
-            <IonButton onClick={() => setIsModalOpen(false)} color="secondary">Cancel</IonButton>
-          </IonFooter>
-        </IonModal>
+            <IonIcon
+              icon={camera}
+              style={{
+                ...glow,
+                fontSize: '32px',
+                cursor: 'pointer',
+                color: 'white'
+              }}
+              onClick={() => editFileInputRef.current?.click()}
+            />
 
-        <IonAlert
-          isOpen={isAlertOpen}
-          onDidDismiss={() => setIsAlertOpen(false)}
-          header="Success"
-          message="Post updated successfully!"
-          buttons={['OK']}
-        />
-      </IonPage>
-    </IonApp>
+            {showEditEmojiPicker && (
+              <div style={{
+                position: 'absolute',
+                zIndex: 1000,
+                top: '1%',
+                left: 20,
+                marginBottom: '10px'
+              }}>
+                <Picker
+                  data={data}
+                  onEmojiSelect={addEmojiToEdit}
+                  onClickOutside={() => setShowEditEmojiPicker(false)}
+                />
+              </div>
+            )}
+          </div>
+
+          {(editImagePreview || editingPost?.post_image_url) && (
+            <div style={{
+              position: 'relative',
+              marginTop: '1rem'
+            }}>
+              <img
+                src={editImagePreview || editingPost?.post_image_url}
+                alt="Preview"
+                style={{
+                  width: '100%',
+                  maxWidth: '400px',
+                  borderRadius: '8px',
+                  display: 'block'
+                }}
+              />
+
+              {/* Camera icon overlay on image */}
+              <div style={{
+                position: 'absolute',
+                bottom: '10px',
+                right: '10px',
+                backgroundColor: 'rgba(0,0,0,0.5)',
+                borderRadius: '50%',
+                padding: '5px'
+              }}>
+                <IonIcon
+                  icon={camera}
+                  style={{
+                    fontSize: '24px',
+                    cursor: 'pointer',
+                    color: 'white'
+                  }}
+                  onClick={() => editFileInputRef.current?.click()}
+                />
+              </div>
+            </div>
+          )}
+
+          <input
+            type="file"
+            accept="image/*"
+            ref={editFileInputRef}
+            style={{ display: 'none' }}
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              setEditPostImageFile(file ?? null);
+              if (file) {
+                setEditImagePreview(URL.createObjectURL(file));
+              }
+            }}
+          />
+        </IonContent>
+
+        <IonFooter className="ion-padding">
+          <IonButton onClick={savePost} color="secondary">Save</IonButton>
+          <IonButton onClick={() => setIsModalOpen(false)} color="secondary">Cancel</IonButton>
+        </IonFooter>
+      </IonModal>
+
+      <IonAlert
+        isOpen={isAlertOpen}
+        onDidDismiss={() => setIsAlertOpen(false)}
+        header="Success"
+        message="Post updated successfully!"
+        buttons={['OK']}
+      />
+    </IonPage>
   );
 };
 

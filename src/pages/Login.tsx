@@ -152,6 +152,7 @@ const Login: React.FC = () => {
               boxShadow: '0 0 15px #2B99E2, 0 0 15px #2B99E2, 0 0 15px #2B99E2',
               borderRadius: '10px',
               animation: 'borderBlink 2s infinite, fadeIn 1.5s ease-in forwards',
+              left:'7%'
             }}
           >
 
