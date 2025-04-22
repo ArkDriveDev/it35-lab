@@ -6,8 +6,9 @@ import {
     IonItem,
     IonLabel,
     IonAlert,
-    IonPopover,
-    IonToast
+    IonToast,
+    IonCard,
+    IonCardContent
 } from '@ionic/react';
 import { supabase } from '../utils/supaBaseClient';
 import { TOTP } from 'otpauth';
@@ -127,110 +128,115 @@ const TotpAuth: React.FC = () => {
 
     return (
         <IonContent className="ion-padding">
-            <IonText>
-                <h2>Two-Factor Authentication</h2>
-            </IonText>
-
-            {!secret ? (
-                <IonButton expand="block" onClick={generateSecret}>
-                    Generate Secret Key
-                </IonButton>
-            ) : (
-                <>
-                    <IonItem>
-                        <IonLabel className="ion-text-wrap">
-                            <p>Your secret key:</p>
-                            <IonText color="primary">
-                                <strong>{secret}</strong>
-                            </IonText>
-                        </IonLabel>
-
-                        <div
-                            slot="end"
-                            style={{
-                                position: 'relative',
-                                display: 'flex',
-                                alignItems: 'center',
-                                cursor: 'pointer',
-                            }}
-                            onClick={handleCopyClick}
-                            onMouseEnter={() => setShowPopover(true)}
-                            onMouseLeave={() => setShowPopover(false)}
-                        >
-                            <IonIcon icon={clipboardOutline} style={{ fontSize: '24px', marginRight: '6px' }} />
-                            <IonText color="primary"><small>Copy</small></IonText>
-
-                            {/* Custom Tooltip */}
-                            {showPopover && (
-                                <div
-                                    style={{
-                                        position: 'absolute',
-                                        bottom: '100%',
-                                        right: 0,
-                                        marginBottom: '6px',
-                                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                                        color: '#fff',
-                                        padding: '4px 8px',
-                                        borderRadius: '4px',
-                                        fontSize: '12px',
-                                        whiteSpace: 'nowrap',
-                                        zIndex: 9999,
-                                    }}
-                                >
-                                    Copy to clipboard
-                                </div>
-                            )}
-                        </div>
-                    </IonItem>
-
+            <IonCard>
+                <IonCardContent>
                     <IonText>
-                        <p>Enter this manually into your Authenticator app.</p>
+                        <h2>Two-Factor Authentication</h2>
                     </IonText>
-                    <IonButton expand="block" onClick={regenerateSecret}>
-                        Regenerate Key
-                    </IonButton>
-                    <IonButton expand="block" color="danger" onClick={() => setShowAlert(true)}>
-                        Disable 2FA
-                    </IonButton>
-                </>
-            )}
 
-            {error && (
-                <IonText color="danger">
-                    <p>{error}</p>
-                </IonText>
-            )}
+                    {!secret ? (
+                        <IonButton expand="block" onClick={generateSecret}>
+                            Generate Secret Key
+                        </IonButton>
+                    ) : (
+                        <>
+                            <IonItem>
+                                <IonLabel className="ion-text-wrap">
+                                    <p>Your secret key:</p>
+                                    <IonText color="primary">
+                                        <strong>{secret}</strong>
+                                    </IonText>
+                                </IonLabel>
 
-            <IonAlert
-                isOpen={showAlert}
-                onDidDismiss={() => setShowAlert(false)}
-                header={'Are you sure?'}
-                message={'Do you really want to disable Two-Factor Authentication?'}
-                buttons={[
-                    {
-                        text: 'Cancel',
-                        role: 'cancel',
-                        handler: () => {
-                            console.log('Cancel clicked');
-                        },
-                    },
-                    {
-                        text: 'Yes, Disable',
-                        handler: () => {
-                            disableTOTP();
-                            setShowAlert(false);
-                        },
-                    },
-                ]}
-            />
+                                <div
+                                    slot="end"
+                                    style={{
+                                        position: 'relative',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        cursor: 'pointer',
+                                    }}
+                                    onClick={handleCopyClick}
+                                    onMouseEnter={() => setShowPopover(true)}
+                                    onMouseLeave={() => setShowPopover(false)}
+                                >
+                                    <IonIcon icon={clipboardOutline} style={{ fontSize: '24px', marginRight: '6px' }} />
+                                    <IonText color="primary"><small>Copy</small></IonText>
 
-            <IonToast
-                isOpen={showToast}
-                message="Copied to clipboard!"
-                duration={1500}
-                onDidDismiss={() => setShowToast(false)}
-                color="success"
-            />
+                                    {/* Custom Tooltip */}
+                                    {showPopover && (
+                                        <div
+                                            style={{
+                                                position: 'absolute',
+                                                bottom: '100%',
+                                                right: 0,
+                                                marginBottom: '6px',
+                                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                                color: '#fff',
+                                                padding: '4px 8px',
+                                                borderRadius: '4px',
+                                                fontSize: '12px',
+                                                whiteSpace: 'nowrap',
+                                                zIndex: 9999,
+                                            }}
+                                        >
+                                            Copy to clipboard
+                                        </div>
+                                    )}
+                                </div>
+                            </IonItem>
+
+                            <IonText>
+                                <p>Enter this manually into your Authenticator app.</p>
+                            </IonText>
+                            <IonButton expand="block" onClick={regenerateSecret}>
+                                Regenerate Key
+                            </IonButton>
+                            <IonButton expand="block" color="danger" onClick={() => setShowAlert(true)}>
+                                Disable 2FA
+                            </IonButton>
+                        </>
+                    )}
+
+                    {error && (
+                        <IonText color="danger">
+                            <p>{error}</p>
+                        </IonText>
+                    )}
+
+                    <IonAlert
+                        isOpen={showAlert}
+                        onDidDismiss={() => setShowAlert(false)}
+                        header={'Are you sure?'}
+                        message={'Do you really want to disable Two-Factor Authentication?'}
+                        buttons={[
+                            {
+                                text: 'Cancel',
+                                role: 'cancel',
+                                handler: () => {
+                                    console.log('Cancel clicked');
+                                },
+                            },
+                            {
+                                text: 'Yes, Disable',
+                                handler: () => {
+                                    disableTOTP();
+                                    setShowAlert(false);
+                                },
+                            },
+                        ]}
+                    />
+
+                    <IonToast
+                        isOpen={showToast}
+                        message="Copied to clipboard!"
+                        duration={1500}
+                        onDidDismiss={() => setShowToast(false)}
+                        color="success"
+                    />
+                </IonCardContent>
+            </IonCard>
+
         </IonContent>
     );
 };
