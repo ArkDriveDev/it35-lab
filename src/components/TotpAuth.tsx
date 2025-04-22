@@ -6,6 +6,8 @@ import {
     IonItem,
     IonLabel,
     IonAlert,
+    IonPopover,
+    IonToast
 } from '@ionic/react';
 import { supabase } from '../utils/supaBaseClient';
 import { TOTP } from 'otpauth';
@@ -18,6 +20,10 @@ const TotpAuth: React.FC = () => {
     const [error, setError] = useState('');
     const [userId, setUserId] = useState('');
     const [showAlert, setShowAlert] = useState(false);
+    const [showPopover, setShowPopover] = useState(false);
+    const [popoverEvent, setPopoverEvent] = useState<MouseEvent | undefined>(undefined);
+    const [showToast, setShowToast] = useState(false);
+
 
     useEffect(() => {
         const getUserAndTotp = async () => {
@@ -104,7 +110,7 @@ const TotpAuth: React.FC = () => {
     const copyToClipboard = async (text: string) => {
         try {
             await navigator.clipboard.writeText(text);
-            console.log('Secret copied to clipboard!');
+            setShowToast(true); // show toast after copying
         } catch (err) {
             console.error('Failed to copy: ', err);
         }
@@ -129,14 +135,36 @@ const TotpAuth: React.FC = () => {
                                 <strong>{secret}</strong>
                             </IonText>
                         </IonLabel>
-                        <IonIcon
-                            icon={clipboardOutline}
+                        <div
                             slot="end"
-                            style={{ fontSize: '24px', cursor: 'pointer' }}
+                            style={{ position: 'relative', display: 'flex', alignItems: 'center', cursor: 'pointer' }}
+                            onMouseEnter={() => setShowPopover(true)}
+                            onMouseLeave={() => setShowPopover(false)}
                             onClick={() => copyToClipboard(secret)}
-                        />
-                    </IonItem>
+                        >
+                            <IonIcon icon={clipboardOutline} style={{ fontSize: '24px', marginRight: '6px' }} />
+                            <IonText color="primary"><small>Copy</small></IonText>
+                            {showPopover && (
+                                <div
+                                    style={{
+                                        position: 'absolute',
+                                        top: '-30px',
+                                        right: 0,
+                                        backgroundColor: '#333',
+                                        color: '#fff',
+                                        padding: '4px 8px',
+                                        borderRadius: '4px',
+                                        fontSize: '12px',
+                                        whiteSpace: 'nowrap',
+                                        zIndex: 1000,
+                                    }}
+                                >
+                                    Copy
+                                </div>
+                            )}
+                        </div>
 
+                    </IonItem>
 
                     <IonText>
                         <p>Enter this manually into your Authenticator app.</p>
@@ -177,6 +205,24 @@ const TotpAuth: React.FC = () => {
                         },
                     },
                 ]}
+            />
+
+            <IonPopover
+                isOpen={showPopover}
+                event={popoverEvent}
+                onDidDismiss={() => setShowPopover(false)}
+                side="top"
+                alignment="center"
+            >
+                <IonText className="ion-padding">Copy</IonText>
+            </IonPopover>
+
+            <IonToast
+                isOpen={showToast}
+                message="Copied to clipboard!"
+                duration={1500}
+                onDidDismiss={() => setShowToast(false)}
+                color="success"
             />
         </IonContent>
     );
