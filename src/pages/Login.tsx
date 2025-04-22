@@ -18,6 +18,7 @@ import { supabase } from '../utils/supaBaseClient';
 import backgroundImg from '../images/Intro-HELLO-FUTURE-1920x1080_v2.gif';
 import Logo from '../images/water.gif';
 import BGM from '../bgm/Warframe 1999 OST_ Cut Through.mp3';
+import { TOTP } from 'otpauth';
 
 const AlertBox: React.FC<{ message: string; isOpen: boolean; onClose: () => void }> = ({ message, isOpen, onClose }) => {
   return (
@@ -41,7 +42,7 @@ const Login: React.FC = () => {
   const [showTOTPInput, setShowTOTPInput] = useState(false); // To toggle showing TOTP input
   const [totpSecret, setTOTPSecret] = useState(''); // To store the secret for TOTP verification
   const [totpCode, setTOTPCode] = useState('');
-  
+
   const h1Style = {
     display: 'flex',
     alignItems: 'center',
@@ -97,26 +98,26 @@ const Login: React.FC = () => {
   const doLogin = async () => {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     const user = data?.user;
-  
+
     if (error) {
       setAlertMessage(error.message);
       setShowAlert(true);
       return;
     }
-  
+
     // Check if TOTP is verified
     const { data: totpData, error: totpError } = await supabase
       .from('user_totp')
       .select('is_verified, secret')
       .eq('user_id', user?.id)
       .single();
-  
+
     if (totpError) {
       setAlertMessage('Error fetching TOTP status.');
       setShowAlert(true);
       return;
     }
-  
+
     if (totpData?.is_verified === false) {
       // If TOTP is not verified, bypass TOTP input and proceed to the next page
       audio.pause();
@@ -131,17 +132,42 @@ const Login: React.FC = () => {
       setShowTOTPInput(true);
     }
   };
-  const handleTOTPVerify = () => {
-    // Verify TOTP code here
-    // If verification is successful:
-    setShowTOTPInput(false);
-    audio.pause();
-    audio.currentTime = 0;
-    setShowToast(true);
-    setTimeout(() => {
-      navigation.push('/it35-lab/app', 'forward', 'replace');
-    }, 300);
-    // Handle any error if the TOTP verification fails
+  const handleTOTPVerify = async () => {
+    if (!totpCode || totpCode.length !== 6) {
+      setAlertMessage('Please enter a valid 6-digit TOTP code.');
+      setShowAlert(true);
+      return;
+    }
+
+    try {
+      // Create a TOTP instance with the secret
+      const totp = new TOTP({
+        secret: totpSecret,
+        digits: 6,
+      });
+
+      // Validate the code
+      const isValid = totp.validate({ token: totpCode, window: 1 }) !== null;
+
+      if (!isValid) {
+        setAlertMessage('Invalid TOTP code. Please try again.');
+        setShowAlert(true);
+        return;
+      }
+
+      // If code is valid:
+      setShowTOTPInput(false);
+      audio.pause();
+      audio.currentTime = 0;
+      setShowToast(true);
+      setTimeout(() => {
+        navigation.push('/it35-lab/app', 'forward', 'replace');
+      }, 300);
+    } catch (error) {
+      console.error('TOTP verification error:', error);
+      setAlertMessage('Error verifying TOTP code. Please try again.');
+      setShowAlert(true);
+    }
   };
 
   return (
@@ -213,71 +239,86 @@ const Login: React.FC = () => {
                     marginBottom: '1rem',
                   }}
                 />
+
                 <h1 style={h1Style}>USER LOGIN</h1>
-                <IonInput
-                  label="Email"
-                  labelPlacement="floating"
-                  fill="outline"
-                  type="email"
-                  placeholder="Enter Email"
-                  value={email}
-                  onIonChange={(e) => setEmail(e.detail.value!)}
-                  style={{
-                    boxShadow: '0 0 8px rgba(43, 174, 226, 0.8)',
-                    border: '1px solid rgba(43, 174, 226, 0.8)',
-                    color: 'white',
-                    backdropFilter: 'blur(6px)',
-                  }}
-                />
-                <IonInput
-                  fill="outline"
-                  type="password"
-                  placeholder="Password"
-                  value={password}
-                  onIonChange={(e) => setPassword(e.detail.value!)}
-                  style={{
-                    marginTop: '10px',
-                    boxShadow: '0 0 8px rgba(43, 174, 226, 0.8)',
-                    border: '1px solid rgba(43, 174, 226, 0.8)',
-                    color: 'white',
-                    backdropFilter: 'blur(3px)',
-                  }}
-                >
-                  <IonInputPasswordToggle slot="end" color="secondary" />
-                </IonInput>
+
+                {!showTOTPInput ? (
+                  <>
+                    <IonInput
+                      label="Email"
+                      labelPlacement="floating"
+                      fill="outline"
+                      type="email"
+                      placeholder="Enter Email"
+                      value={email}
+                      onIonChange={(e) => setEmail(e.detail.value!)}
+                      style={{
+                        boxShadow: '0 0 8px rgba(43, 174, 226, 0.8)',
+                        border: '1px solid rgba(43, 174, 226, 0.8)',
+                        color: 'white',
+                        backdropFilter: 'blur(6px)',
+                      }}
+                    />
+                    <IonInput
+                      fill="outline"
+                      type="password"
+                      placeholder="Password"
+                      value={password}
+                      onIonChange={(e) => setPassword(e.detail.value!)}
+                      style={{
+                        marginTop: '10px',
+                        boxShadow: '0 0 8px rgba(43, 174, 226, 0.8)',
+                        border: '1px solid rgba(43, 174, 226, 0.8)',
+                        color: 'white',
+                        backdropFilter: 'blur(3px)',
+                      }}
+                    >
+                      <IonInputPasswordToggle slot="end" color="secondary" />
+                    </IonInput>
+
+                    <IonButton onClick={doLogin} expand="full" shape="round" color="secondary">
+                      Login
+                    </IonButton>
+
+                    <IonButton routerLink="/it35-lab/Registration" expand="full" fill="clear" shape="round" color="secondary">
+                      Don't have an account? Register here
+                    </IonButton>
+                  </>
+                ) : (
+                  <div style={{ animation: 'fadeIn 1.5s ease-in forwards', width: '100%' }}>
+                    <IonInput
+                      label="Enter 6-digit TOTP"
+                      labelPlacement="floating"
+                      fill="outline"
+                      type="text"
+                      placeholder="Enter 6-digit code"
+                      value={totpCode}
+                      onIonChange={(e) => setTOTPCode(e.detail.value!)}
+                      style={{
+                        marginTop: '10px',
+                        boxShadow: '0 0 8px rgba(43, 174, 226, 0.8)',
+                        border: '1px solid rgba(43, 174, 226, 0.8)',
+                        color: 'white',
+                        backdropFilter: 'blur(3px)',
+                      }}
+                    />
+                    <IonButton onClick={handleTOTPVerify} expand="full" shape="round" color="secondary">
+                      Verify TOTP
+                    </IonButton>
+                    <IonButton
+                      onClick={() => {
+                        setShowTOTPInput(false);
+                        setTOTPCode('');
+                      }}
+                      expand="full"
+                      fill="clear"
+                      color="medium"
+                    >
+                      Cancel
+                    </IonButton>
+                  </div>
+                )}
               </div>
-
-              <IonButton onClick={doLogin} expand="full" shape="round" color="secondary">
-                Login
-              </IonButton>
-
-              <IonButton routerLink="/it35-lab/Registration" expand="full" fill="clear" shape="round" color="secondary">
-                Don't have an account? Register here
-              </IonButton>
-
-              {showTOTPInput && (
-                <div style={{ animation: 'fadeIn 1.5s ease-in forwards' }}>
-                  <IonInput
-                    label="Enter 6-digit TOTP"
-                    labelPlacement="floating"
-                    fill="outline"
-                    type="text"
-                    placeholder="Enter 6-digit code"
-                    value={totpCode}
-                    onIonChange={(e) => setTOTPCode(e.detail.value!)}
-                    style={{
-                      marginTop: '10px',
-                      boxShadow: '0 0 8px rgba(43, 174, 226, 0.8)',
-                      border: '1px solid rgba(43, 174, 226, 0.8)',
-                      color: 'white',
-                      backdropFilter: 'blur(3px)',
-                    }}
-                  />
-                  <IonButton onClick={handleTOTPVerify} expand="full" shape="round" color="secondary">
-                    Verify TOTP
-                  </IonButton>
-                </div>
-              )}
 
               <AlertBox message={alertMessage} isOpen={showAlert} onClose={() => setShowAlert(false)} />
               <IonToast
