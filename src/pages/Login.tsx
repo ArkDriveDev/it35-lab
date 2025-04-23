@@ -195,7 +195,7 @@ const Login: React.FC = () => {
           style={{
             display: 'flex',
             alignItems: 'center',
-            marginLeft: '8%',
+            marginLeft: '3%',
             height: '70%',
             width: '100%',
           }}
@@ -213,7 +213,6 @@ const Login: React.FC = () => {
               boxShadow: '0 0 15px #2B99E2, 0 0 15px #2B99E2, 0 0 15px #2B99E2',
               borderRadius: '10px',
               animation: 'borderBlink 2s infinite, fadeIn 1.5s ease-in forwards',
-              left: '7%',
             }}
           >
             <IonCardContent>

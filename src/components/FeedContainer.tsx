@@ -311,7 +311,7 @@ const FeedContainer = () => {
             color: ' #2B99E2',
             border: ' #2B99E2',
             boxShadow: '0 0 6px #2B99E2, 0 0 6px #2B99E2, 0 0 6px #2B99E2',
-          }}>Feeds</IonTitle>
+          }}>Feed</IonTitle>
         </IonToolbar>
       </IonHeader>
       <IonContent>
