@@ -195,7 +195,7 @@ const Login: React.FC = () => {
           style={{
             display: 'flex',
             alignItems: 'center',
-            marginLeft: '3%',
+            marginLeft: '1%',
             height: '70%',
             width: '100%',
           }}
@@ -203,7 +203,7 @@ const Login: React.FC = () => {
           <IonCard
             style={{
               background: 'transparent',
-              marginTop: '13%',
+              marginTop: '10%',
               width: '90vw',
               maxWidth: '500px',
               height: 'auto',
